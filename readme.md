@@ -46,7 +46,8 @@ const config = {
 createStorageListener(store, config);
 
 /*
-*  To still make your state sync. You need to trigger other actions with the data from the *  api request. The example is using redux-saga to handle the side effect.
+*  To still make your state sync. You need to trigger other actions with the data from the *  api request. 
+*  The example is using redux-saga to handle the side effects.
 */
 
 export function* fetchRepoSaga(action) {
