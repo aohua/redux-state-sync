@@ -59,11 +59,11 @@ export function* fetchRepoSaga(action) {
   }
 }
 
-export function* getFatchRepoWatcher() {
+export function* fetchRepoWatcher() {
   yield* takeLatest(REPO.REQUEST, fetchRepoSaga);
 }
 
 export default [
-  getFatchRepoWatcher,
+  fetchRepoWatcher,
 ];
 ```
