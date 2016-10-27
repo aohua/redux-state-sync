@@ -1,6 +1,6 @@
 # Redux-State-Sync
 
-A middleware to sync your redux state across browser tabs.
+A very light weight middleware to sync your redux state across browser tabs.
 
 ### Installing
 
@@ -46,7 +46,7 @@ const config = {
 createStorageListener(store, config);
 
 /*
-*  To still make your state sync. You need to trigger other actions with the data from the *  api request. 
+*  To still make your state sync. You need to trigger other actions with the data from the api request. 
 *  The example is using redux-saga to handle the side effects.
 */
 
@@ -67,5 +67,3 @@ export default [
   getFatchRepoWatcher,
 ];
 ```
-###TODO
-1. Create another version with cookie.
