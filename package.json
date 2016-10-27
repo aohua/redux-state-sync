@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AOHUA/redux-localstorage-sync.git"
+    "url": "git+https://github.com/AOHUA/redux-state-sync.git"
   },
   "keywords": [
     "redux",
@@ -18,9 +18,9 @@
   "author": "AOHUA",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/AOHUA/redux-localstorage-sync/issues"
+    "url": "https://github.com/AOHUA/redux-state-sync/issues"
   },
-  "homepage": "https://github.com/AOHUA/redux-localstorage-sync#readme",
+  "homepage": "https://github.com/AOHUA/redux-state-sync#readme",
   "devDependencies": {
     "eslint": "^3.8.1",
     "eslint-config-airbnb": "^12.0.0",
