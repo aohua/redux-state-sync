@@ -5,7 +5,7 @@ import get from 'lodash/get';
 let lastTimeStamp = 0;
 const LAST_ACTION = 'LAST_ACTION';
 
-function timestampAction(action) {
+export function timestampAction(action) {
   const stampedAction = action;
   stampedAction.$time = Date.now();
   return {
