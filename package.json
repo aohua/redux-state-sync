@@ -1,0 +1,34 @@
+{
+  "name": "redux-state-sync",
+  "version": "1.0.2",
+  "description": "A middleware for redux to sync localstorage state in different tabs",
+  "main": "syncStorage.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AOHUA/redux-localstorage-sync.git"
+  },
+  "keywords": [
+    "redux",
+    "react",
+    "localstorage"
+  ],
+  "author": "AOHUA",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AOHUA/redux-localstorage-sync/issues"
+  },
+  "homepage": "https://github.com/AOHUA/redux-localstorage-sync#readme",
+  "devDependencies": {
+    "eslint": "^3.8.1",
+    "eslint-config-airbnb": "^12.0.0",
+    "eslint-plugin-import": "^2.0.1",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.4.1"
+  },
+  "dependencies": {
+    "lodash": "^4.16.4"
+  }
+}
