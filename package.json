@@ -1,14 +1,16 @@
 {
   "name": "redux-state-sync",
-  "version": "1.0.4",
+  "version": "0.0.0-semantically-released",
   "description": "A middleware for redux to sync localstorage state in different tabs",
   "main": "syncStorage.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "commit": "git-cz",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AOHUA/redux-state-sync.git"
+    "url": "https://github.com/AOHUA/redux-state-sync.git"
   },
   "keywords": [
     "redux",
@@ -30,12 +32,15 @@
     "babel-jest": "^16.0.0",
     "babel-polyfill": "^6.16.0",
     "babel-preset-es2015": "^6.18.0",
+    "commitizen": "^2.8.6",
+    "cz-conventional-changelog": "^1.2.0",
     "eslint": "^3.8.1",
     "eslint-config-airbnb": "^12.0.0",
     "eslint-plugin-import": "^2.0.1",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1",
-    "jest": "^16.0.2"
+    "jest": "^16.0.2",
+    "semantic-release": "^4.3.5"
   },
   "dependencies": {
     "lodash": "^4.16.4"
@@ -45,5 +50,8 @@
       "./__mocks__/envMock.js"
     ],
     "verbose": true
+  },
+  "czConfig": {
+    "path": "node_modules/cz-conventional-changelog"
   }
 }
