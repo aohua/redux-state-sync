@@ -2,6 +2,9 @@
 
 A very light weight middleware to sync your redux state across browser tabs.
 
+[![travis build](https://img.shields.io/travis/AOHUA/redux-state-sync.svg)](https://travis-ci.org/AOHUA/redux-state-sync)
+[![downloads](https://img.shields.io/npm/dm/redux-state-sync.svg)](https://www.npmjs.com/package/redux-state-sync)
+
 ### Installing
 
 Simply install it with npm.
@@ -46,7 +49,7 @@ const config = {
 createStorageListener(store, config);
 
 /*
-*  To still make your state sync. You need to trigger other actions with the data from the api request. 
+*  To still make your state sync. You need to trigger other actions with the data from the api request.
 *  The example is using redux-saga to handle the side effects.
 */
 
