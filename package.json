@@ -13,7 +13,11 @@
   "keywords": [
     "redux",
     "react",
-    "localstorage"
+    "localstorage",
+    "crosstab",
+    "sync",
+    "tabs",
+    "middleware"
   ],
   "author": "AOHUA",
   "license": "ISC",
