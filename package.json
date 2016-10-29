@@ -1,6 +1,6 @@
 {
   "name": "redux-state-sync",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A middleware for redux to sync localstorage state in different tabs",
   "main": "syncStorage.js",
   "scripts": {
@@ -41,7 +41,9 @@
     "lodash": "^4.16.4"
   },
   "jest": {
-    "setupFiles":["./__mocks__/envMock.js"],
+    "setupFiles": [
+      "./__mocks__/envMock.js"
+    ],
     "verbose": true
   }
 }
