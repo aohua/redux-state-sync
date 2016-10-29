@@ -29,7 +29,6 @@ export function createStorageListener(store, config) {
   if (config) {
     ignore = get(config, 'ignore', []);
   }
-
   window.addEventListener('storage', (event) => {
     const { stampedAction } = JSON.parse(event.newValue);
     if (stampedAction
