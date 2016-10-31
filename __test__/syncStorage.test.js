@@ -1,5 +1,5 @@
 /* global jest window localStorage describe it test expect */
-import { actionStorageMiddleware, createStorageListener, timestampAction } from '../syncStorage';
+import { actionStorageMiddleware, createStorageListener, timestampAction } from '../dist/syncStorage';
 
 const LAST_ACTION = 'LAST_ACTION';
 let triggeredAction = {};
