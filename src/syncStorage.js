@@ -14,12 +14,10 @@ export function timestampAction(action) {
 }
 
 export const actionStorageMiddleware = () => next => (action) => {
-  if (action) {
-    if (!action.$time) {
-      const stampedAction = timestampAction(action);
-      lastTimeStamp = stampedAction.$time;
-      localStorage.setItem(LAST_ACTION, JSON.stringify(stampedAction));
-    }
+  if (action && !action.$time) {
+    const stampedAction = timestampAction(action);
+    lastTimeStamp = stampedAction.$time;
+    localStorage.setItem(LAST_ACTION, JSON.stringify(stampedAction));
   }
   return next(action);
 };

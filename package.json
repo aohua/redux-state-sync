@@ -2,10 +2,12 @@
   "name": "redux-state-sync",
   "version": "0.0.0",
   "description": "A middleware for redux to sync localstorage state in different tabs",
-  "main": "syncStorage.js",
+  "main": "dist/syncStorage.js",
   "scripts": {
     "test": "jest",
     "commit": "git-cz",
+    "prebuild": "rimraf dist",
+    "build": "babel --copy-files --out-dir dist --ignore *.test.js src",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "repository": {
@@ -40,6 +42,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1",
     "jest": "^16.0.2",
+    "rimraf": "^2.5.4",
     "semantic-release": "^4.3.5"
   },
   "dependencies": {
