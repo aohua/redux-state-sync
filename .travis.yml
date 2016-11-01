@@ -11,6 +11,7 @@ before_install:
   - npm i -g npm@^3.1.0
 before_script:
   - npm prune
+  - npm install
 script:
   - npm run build
   - npm run test
