@@ -1,6 +1,6 @@
 # Redux-State-Sync
 
-A very light weight middleware to sync your redux state across browser tabs. This module will listens to the window storage event and triggers exactly the same actions triggered in other tabs to make the redux state sync. 
+A light weight middleware to sync your redux state across browser tabs. This module will listens to the window storage event and triggers exactly the same actions triggered in other tabs to make the redux state sync. Furthermore you can also passing in an ignore list to ignore the actions which you don't want to trigger in other tabs(like Api requests).
 
 [![travis build](https://img.shields.io/travis/AOHUA/redux-state-sync.svg)](https://travis-ci.org/AOHUA/redux-state-sync)
 [![downloads](https://img.shields.io/npm/dm/redux-state-sync.svg)](https://www.npmjs.com/package/redux-state-sync)
