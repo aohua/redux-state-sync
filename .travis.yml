@@ -12,8 +12,8 @@ before_install:
 before_script:
   - npm prune
 script:
-  - npm run test
   - npm run build
+  - npm run test
 after_success:
   - npm run semantic-release
 branches:
