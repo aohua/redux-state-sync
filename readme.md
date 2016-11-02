@@ -58,6 +58,7 @@ createStorageListener(store, config);
 export function* fetchRepoSaga(action) {
   try {
     const repo = yield call(api.fetchRepo, action.url);
+    /* Triggers a REPO_SUCCESS and this action should be triggered in other tabs also */
     yield put({ type: 'REPO_SUCCESS', repo });
   } catch (e) {
     yield put({ type: 'REPO_FAILURE', message: e.message });

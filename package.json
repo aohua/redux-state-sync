@@ -1,7 +1,7 @@
 {
   "name": "redux-state-sync",
   "version": "0.0.2",
-  "description": "A middleware for redux to sync localstorage state in different tabs",
+  "description": "A middleware for redux to sync state in different tabs",
   "main": "dist/syncStorage.js",
   "scripts": {
     "test": "jest",
