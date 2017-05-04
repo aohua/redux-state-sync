@@ -15,9 +15,13 @@ export function timestampAction(action) {
 
 export const actionStorageMiddleware = () => next => (action) => {
   if (action && !action.$time) {
-    const stampedAction = timestampAction(action);
-    lastTimeStamp = stampedAction.$time;
-    localStorage.setItem(LAST_ACTION, JSON.stringify(stampedAction));
+    try {
+      const stampedAction = timestampAction(action);
+      lastTimeStamp = stampedAction.$time;
+      localStorage.setItem(LAST_ACTION, JSON.stringify(stampedAction));
+    } catch (e) {
+      console.log("Your browser doesn't support localStorage");
+    }
   }
   return next(action);
 };
