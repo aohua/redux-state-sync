@@ -47,6 +47,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1",
     "jest": "^16.0.2",
+    "npm-run-all": "^4.0.2",
     "rimraf": "^2.5.4",
     "semantic-release": "^6.3.2",
     "webpack": "^2.4.1"
