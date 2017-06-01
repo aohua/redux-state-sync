@@ -75,3 +75,5 @@ export default [
 
 # Todo
 1. Auto get the state from localStorage, if there was another tab opened.
+2. A better way to pass in the action ignore list.
+3. Remove lodash as dependency.
