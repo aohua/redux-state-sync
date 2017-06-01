@@ -13,7 +13,6 @@ Simply install it with npm.
 npm install --save redux-state-sync
 ```
 
-
 ### How to use
 
 import actionStorageMiddleware and createStorageListener to your project and follow the example below.
@@ -73,3 +72,6 @@ export default [
   fetchRepoWatcher,
 ];
 ```
+
+# Todo
+1. Auto get the state from localStorage, if there was another tab opened.
