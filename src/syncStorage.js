@@ -1,5 +1,4 @@
 import indexOf from 'lodash/indexOf';
-import get from 'lodash/get';
 
 /* global window localStorage true */
 let lastTimeStamp = 0;
@@ -29,16 +28,20 @@ export const actionStorageMiddleware = () => next => (action) => {
 export function createStorageListener(store, config) {
   let ignore = [];
   if (config) {
-    ignore = get(config, 'ignore', []);
+    ignore =
+      Object.prototype.toString.call(config.ignore) === '[object Array]' ? config.ignore : [];
   }
   window.addEventListener('storage', (event) => {
-    const { stampedAction } = JSON.parse(event.newValue);
-    if (stampedAction
-      && stampedAction.$time
-      !== lastTimeStamp
-      && indexOf(ignore, stampedAction.type) < 0) {
-      lastTimeStamp = stampedAction.$time;
-      store.dispatch(stampedAction);
+    if (event.key === LAST_ACTION) {
+      const { stampedAction } = JSON.parse(event.newValue);
+      if (
+        stampedAction &&
+        stampedAction.$time !== lastTimeStamp &&
+        indexOf(ignore, stampedAction.type) < 0
+      ) {
+        lastTimeStamp = stampedAction.$time;
+        store.dispatch(stampedAction);
+      }
     }
   });
 }

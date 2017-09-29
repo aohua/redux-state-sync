@@ -11,10 +11,6 @@ var _indexOf = require('lodash/indexOf');
 
 var _indexOf2 = _interopRequireDefault(_indexOf);
 
-var _get = require('lodash/get');
-
-var _get2 = _interopRequireDefault(_get);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* global window localStorage true */
@@ -49,15 +45,17 @@ var actionStorageMiddleware = exports.actionStorageMiddleware = function actionS
 function createStorageListener(store, config) {
   var ignore = [];
   if (config) {
-    ignore = (0, _get2.default)(config, 'ignore', []);
+    ignore = Object.prototype.toString.call(config.ignore) === '[object Array]' ? config.ignore : [];
   }
   window.addEventListener('storage', function (event) {
-    var _JSON$parse = JSON.parse(event.newValue),
-        stampedAction = _JSON$parse.stampedAction;
+    if (event.key === LAST_ACTION) {
+      var _JSON$parse = JSON.parse(event.newValue),
+          stampedAction = _JSON$parse.stampedAction;
 
-    if (stampedAction && stampedAction.$time !== lastTimeStamp && (0, _indexOf2.default)(ignore, stampedAction.type) < 0) {
-      lastTimeStamp = stampedAction.$time;
-      store.dispatch(stampedAction);
+      if (stampedAction && stampedAction.$time !== lastTimeStamp && (0, _indexOf2.default)(ignore, stampedAction.type) < 0) {
+        lastTimeStamp = stampedAction.$time;
+        store.dispatch(stampedAction);
+      }
     }
   });
 }
