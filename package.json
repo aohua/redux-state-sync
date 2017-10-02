@@ -52,9 +52,7 @@
     "semantic-release": "^6.3.2",
     "webpack": "^2.4.1"
   },
-  "dependencies": {
-    "lodash": "^4.16.4"
-  },
+  "dependencies": {},
   "jest": {
     "setupFiles": [
       "./__mocks__/envMock.js"
