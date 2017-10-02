@@ -1,5 +1,3 @@
-import indexOf from 'lodash/indexOf';
-
 /* global window localStorage true */
 let lastTimeStamp = 0;
 const LAST_ACTION = 'LAST_ACTION';
@@ -37,7 +35,7 @@ export function createStorageListener(store, config) {
       if (
         stampedAction &&
         stampedAction.$time !== lastTimeStamp &&
-        indexOf(ignore, stampedAction.type) < 0
+        ignore.indexOf(stampedAction.type) === -1
       ) {
         lastTimeStamp = stampedAction.$time;
         store.dispatch(stampedAction);

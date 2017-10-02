@@ -3,16 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.actionStorageMiddleware = undefined;
 exports.timestampAction = timestampAction;
 exports.createStorageListener = createStorageListener;
-
-var _indexOf = require('lodash/indexOf');
-
-var _indexOf2 = _interopRequireDefault(_indexOf);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 /* global window localStorage true */
 var lastTimeStamp = 0;
 var LAST_ACTION = 'LAST_ACTION';
@@ -52,7 +44,7 @@ function createStorageListener(store, config) {
       var _JSON$parse = JSON.parse(event.newValue),
           stampedAction = _JSON$parse.stampedAction;
 
-      if (stampedAction && stampedAction.$time !== lastTimeStamp && (0, _indexOf2.default)(ignore, stampedAction.type) < 0) {
+      if (stampedAction && stampedAction.$time !== lastTimeStamp && ignore.indexOf(stampedAction.type) === -1) {
         lastTimeStamp = stampedAction.$time;
         store.dispatch(stampedAction);
       }
