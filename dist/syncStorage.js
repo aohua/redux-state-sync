@@ -3,20 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.actionStorageMiddleware = undefined;
 exports.timestampAction = timestampAction;
 exports.createStorageListener = createStorageListener;
-
-var _indexOf = require('lodash/indexOf');
-
-var _indexOf2 = _interopRequireDefault(_indexOf);
-
-var _get = require('lodash/get');
-
-var _get2 = _interopRequireDefault(_get);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 /* global window localStorage true */
 var lastTimeStamp = 0;
 var LAST_ACTION = 'LAST_ACTION';
@@ -38,7 +26,7 @@ var actionStorageMiddleware = exports.actionStorageMiddleware = function actionS
           lastTimeStamp = stampedAction.$time;
           localStorage.setItem(LAST_ACTION, JSON.stringify(stampedAction));
         } catch (e) {
-          console.log("Your browser doesn't support localStorage");
+          console.error("Your browser doesn't support localStorage");
         }
       }
       return next(action);
@@ -46,16 +34,26 @@ var actionStorageMiddleware = exports.actionStorageMiddleware = function actionS
   };
 };
 
-function createStorageListener(store, config) {
-  var ignore = [];
-  if (config) {
-    ignore = (0, _get2.default)(config, 'ignore', []);
+function createStorageListener(store) {
+  var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  var allowed = function allowed() {
+    return true;
+  };
+
+  if (config.predicate && typeof config.predicate === 'function') {
+    allowed = config.predicate;
+  } else if (Array.isArray(config.ignore)) {
+    allowed = function allowed(type) {
+      return config.ignore.indexOf(type) >= 0;
+    };
   }
+
   window.addEventListener('storage', function (event) {
     var _JSON$parse = JSON.parse(event.newValue),
         stampedAction = _JSON$parse.stampedAction;
 
-    if (stampedAction && stampedAction.$time !== lastTimeStamp && (0, _indexOf2.default)(ignore, stampedAction.type) < 0) {
+    if (stampedAction && stampedAction.$time !== lastTimeStamp && !!allowed(stampedAction.type)) {
       lastTimeStamp = stampedAction.$time;
       store.dispatch(stampedAction);
     }
