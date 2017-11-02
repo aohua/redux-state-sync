@@ -73,7 +73,10 @@ export default [
 ];
 ```
 
-# Todo
-1. Auto get the state from localStorage, if there was another tab opened.
-2. A better way to pass in the action ignore list.
-3. Remove lodash as dependency.
+Thanks to Olebedev(https://github.com/olebedev), we now have another option to ignore the actions which you don't want to trigger. You can simply add a predicate function in the config object. This option will appeared in the new release.
+
+```
+const config = {
+  predicate: actionType => actionType !== 'GET_REPO',
+};
+```
