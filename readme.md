@@ -73,7 +73,7 @@ export default [
 ];
 ```
 
-Thanks to Olebedev(https://github.com/olebedev), we now have another option to ignore the actions which you don't want to trigger. You can simply add a predicate function in the config object. This option will appeared in the new release.
+Thanks to [Olebedev](https://github.com/olebedev), we now have another option to ignore the actions which you don't want to trigger. You can simply add a predicate function in the config object. This option will appeared in the new release.
 
 ```
 const config = {
