@@ -1,11 +1,11 @@
 # Redux-State-Sync
 
-A light weight middleware to sync your redux state across browser tabs. This module will listens to the window storage event and triggers exactly the same actions triggered in other tabs to make the redux state sync. Furthermore you can also passing in an ignore list to ignore the actions which you don't want to trigger in other tabs(like Api requests).
+A lightweight middleware to sync your redux state across browser tabs. It will listen to the window storage event and dispatch exactly the same actions dispatched in other tabs to keep the redux state in sync. Furthermore, you can also pass a list of actions to ignore, so that they wouldn't be dispatched in other tabs (e.g. API requests).
 
 [![travis build](https://img.shields.io/travis/AOHUA/redux-state-sync.svg)](https://travis-ci.org/AOHUA/redux-state-sync)
 [![downloads](https://img.shields.io/npm/dm/redux-state-sync.svg)](https://www.npmjs.com/package/redux-state-sync)
 
-### Installing
+### How to install
 
 Simply install it with npm.
 
@@ -15,7 +15,11 @@ npm install --save redux-state-sync
 
 ### How to use
 
-import actionStorageMiddleware and createStorageListener to your project and follow the example below.
+import `actionStorageMiddleware` and `createStorageListener`.
+Add actionStorageMiddleware to the list of middlewares during store creation.
+Call `createStorageListener` to subscribe for storage events and dispatch actions to change store state.
+
+Follow the example below:
 
 ```
 import { actionStorageMiddleware, createStorageListener } from 'redux-state-sync';
@@ -41,7 +45,7 @@ const store = createStore(
 createStorageListener(store);
 ```
 
-You may not want to trigger the Actions which triggers a api request. So you can simply pass in the Action type to ignore it. Like below:
+You may not want to dispatch actions which trigger API requests. To prevent those actions from being dispatched, pass in a list of action types as strings:
 
 ```
 const config = {
@@ -73,10 +77,12 @@ export default [
 ];
 ```
 
-Thanks to [Olebedev](https://github.com/olebedev), we now have another option to ignore the actions which you don't want to trigger. You can simply add a predicate function in the config object. This option will appeared in the new release.
+Thanks to [Olebedev](https://github.com/olebedev), there's another way to ignore actions which you don't want to be dispatched. You can simply provide a predicate function in the config object:
 
 ```
 const config = {
   predicate: actionType => actionType !== 'GET_REPO',
 };
 ```
+
+This configuration option will appear in the next release.
