@@ -7,9 +7,7 @@ const localStorageMock = {
   },
   setItem(key, value) {
     store[key] = value.toString();
-    Event.prototype.newValue = JSON.stringify({
-      stampedAction: JSON.parse(value).stampedAction,
-    });
+    Event.prototype.newValue = value;
     window.dispatchEvent(new Event('storage'));
   },
   clear() {
