@@ -85,4 +85,28 @@ const config = {
 };
 ```
 
-This configuration option will appear in the next release.
+### Experimental feature
+
+How to init new tab with current tab's state
+
+By default this feature is disabled, you can enable it as below:
+
+```
+const config = {
+  initiateWithState: true,
+};
+```
+
+You also need to wrap your root reducer with 'withReduxStateSync' function.
+```
+import { withReduxStateSync } from 'redux-state-sync'
+ 
+const appReducer = combineReducers({
+  todos,
+  visibilityFilter
+})
+
+export default withReduxStateSync(appReducer)
+```
+
+This feature is totally experimental, you shall use it at your own risk. ;-)
