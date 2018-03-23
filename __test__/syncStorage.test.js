@@ -1,5 +1,5 @@
 /* global jest window localStorage describe it test expect */
-import { actionStorageMiddleware, createStorageListener, timestampAction } from '../dist/syncStorage';
+import { actionStorageMiddleware, createStorageListener, generateUuidForAction } from '../dist/syncStorage';
 
 const LAST_ACTION = 'LAST_ACTION';
 let triggeredAction = {};
@@ -12,21 +12,22 @@ const store = {
 
 describe('dispatch a test action', () => {
   createStorageListener(store);
-  it('action should have $time added', () => {
+  it('action should have $uuid added', () => {
     const action = { type: 'Test', payload: 'Test' };
-    expect(timestampAction(action).stampedAction.$time).toBeDefined();
+    expect(generateUuidForAction(action).$uuid).toBeDefined();
   });
 
   it('action should be saved into localStorage', () => {
     const action = { type: 'Test', payload: 'Test' };
-    actionStorageMiddleware()(next => next)(action);
+    const getState = () => {};
+    actionStorageMiddleware({ getState })(next => next)(action);
     stampedAction = action;
     expect(localStorage.getItem(LAST_ACTION)).toBeDefined();
   });
 
-  it('same action should be triggered', () => {
-    expect(triggeredAction.type).toBe(stampedAction.type);
-    expect(triggeredAction.payload).toBe(stampedAction.payload);
-    expect(triggeredAction.$time).toBe(stampedAction.$time);
+  it('same action should not be triggered, because the timestamp is the same as the latest timestamp', () => {
+    expect(triggeredAction.type).toBe(undefined);
+    expect(triggeredAction.payload).toBe(undefined);
+    expect(triggeredAction.$uuid).toBe(undefined);
   });
 });
