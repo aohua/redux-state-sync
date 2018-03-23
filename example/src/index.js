@@ -13,7 +13,8 @@ const middlewares = [
  
 const store = createStore(rootReducer, {}, applyMiddleware(...middlewares))
 
-createStorageListener(store, { initiateWithState: true })
+// TOGGLE_TODO will not be triggered
+createStorageListener(store, { initiateWithState: true, predicate: actionType => actionType !== 'TOGGLE_TODO' })
  
 render(
   <Provider store={store}>

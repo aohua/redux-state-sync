@@ -11,6 +11,10 @@ Simply install it with npm.
 
 ```
 npm install --save redux-state-sync
+
+or
+
+yarn add redux-state-sync
 ```
 
 ### How to use
@@ -85,6 +89,8 @@ const config = {
 };
 ```
 
+GET_REPO action will not be triggered in other tabs in this case.
+
 ### Experimental feature
 
 How to init new tab with current tab's state
@@ -101,12 +107,12 @@ You also need to wrap your root reducer with 'withReduxStateSync' function.
 ```
 import { withReduxStateSync } from 'redux-state-sync'
  
-const appReducer = combineReducers({
+const rootReducer = combineReducers({
   todos,
   visibilityFilter
 })
 
-export default withReduxStateSync(appReducer)
+export default withReduxStateSync(rootReducer)
 ```
 
 This feature is totally experimental, you shall use it at your own risk. ;-)
