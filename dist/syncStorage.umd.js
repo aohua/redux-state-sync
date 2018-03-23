@@ -86,7 +86,7 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.timestampAction = timestampAction;
+exports.generateUuidForAction = generateUuidForAction;
 exports.createStorageListener = createStorageListener;
 /* global window localStorage true */
 var lastTimeStamp = 0;
@@ -111,9 +111,17 @@ var receiveIniteState = function receiveIniteState(state) {
   return { type: RECEIVE_INIT_STATE, payload: state };
 };
 
-function timestampAction(action) {
+function guid() {
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
+
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+function generateUuidForAction(action) {
   var stampedAction = action;
-  stampedAction.$time = Date.now();
+  stampedAction.$uuid = guid();
   return stampedAction;
 }
 
@@ -130,9 +138,9 @@ var actionStorageMiddleware = exports.actionStorageMiddleware = function actionS
   var getState = _ref.getState;
   return function (next) {
     return function (action) {
-      if (action && !action.$time) {
-        var stampedAction = timestampAction(action);
-        lastTimeStamp = stampedAction.$time;
+      if (action && !action.$uuid) {
+        var stampedAction = generateUuidForAction(action);
+        lastTimeStamp = stampedAction.$uuid;
         try {
           if (action.type === SEND_INIT_STATE) {
             if (getState()) {
@@ -173,14 +181,14 @@ function createStorageListener(store) {
 
   window.addEventListener('storage', function (event) {
     var stampedAction = JSON.parse(event.newValue);
-    if (stampedAction && stampedAction.$time !== lastTimeStamp) {
+    if (stampedAction && stampedAction.$uuid !== lastTimeStamp) {
       if (stampedAction.type === GET_INIT_STATE && isInitiated) {
         store.dispatch(sendIniteState());
       } else if (stampedAction.type === SEND_INIT_STATE) {
         store.dispatch(receiveIniteState(stampedAction.payload));
         isInitiated = true;
       } else if (!!allowed(stampedAction.type)) {
-        lastTimeStamp = stampedAction.$time;
+        lastTimeStamp = stampedAction.$uuid;
         store.dispatch(stampedAction);
         isInitiated = true;
       }

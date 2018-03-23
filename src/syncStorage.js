@@ -21,9 +21,20 @@ const receiveIniteState = (state) => {
   return { type: RECEIVE_INIT_STATE, payload: state }
 }
 
-export function timestampAction(action) {
+function guid() {
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
+
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+    .toString(16)
+    .substring(1);
+}
+
+export function generateUuidForAction(action) {
   const stampedAction = action;
-  stampedAction.$time = Date.now();
+  stampedAction.$uuid = guid();
   return stampedAction;
 }
 
@@ -37,9 +48,9 @@ export const withReduxStateSync = (appReducer) => {
 }
 
 export const actionStorageMiddleware = ({ getState }) => next => (action) => {
-  if (action && !action.$time) {
-    const stampedAction = timestampAction(action);
-    lastTimeStamp = stampedAction.$time;
+  if (action && !action.$uuid) {
+    const stampedAction = generateUuidForAction(action);
+    lastTimeStamp = stampedAction.$uuid;
     try {
       if (action.type === SEND_INIT_STATE) {
         if (getState()) {
@@ -72,14 +83,14 @@ export function createStorageListener(store, config = defaultConfig) {
 
   window.addEventListener('storage', (event) => {
     const stampedAction = JSON.parse(event.newValue);
-    if (stampedAction && stampedAction.$time !== lastTimeStamp) {
+    if (stampedAction && stampedAction.$uuid !== lastTimeStamp) {
       if (stampedAction.type === GET_INIT_STATE && isInitiated) {
         store.dispatch(sendIniteState());
       } else if (stampedAction.type === SEND_INIT_STATE) {
         store.dispatch(receiveIniteState(stampedAction.payload));
         isInitiated = true;
       } else if (!!allowed(stampedAction.type)) {
-        lastTimeStamp = stampedAction.$time;
+        lastTimeStamp = stampedAction.$uuid;
         store.dispatch(stampedAction);
         isInitiated = true;
       }

@@ -13,7 +13,7 @@ const middlewares = [
  
 const store = createStore(rootReducer, {}, applyMiddleware(...middlewares))
 
-createStorageListener(store)
+createStorageListener(store, { initiateWithState: true })
  
 render(
   <Provider store={store}>
