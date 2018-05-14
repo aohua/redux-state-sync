@@ -5,8 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.generateUuidForAction = generateUuidForAction;
 exports.createStorageListener = createStorageListener;
-/* global window localStorage true */
-var lastTimeStamp = 0;
+var lastUuid = 0;
 var LAST_ACTION = 'LAST_ACTION';
 var GET_INIT_STATE = '&_GET_INIT_STATE';
 var SEND_INIT_STATE = '&_SEND_INIT_STATE';
@@ -57,7 +56,7 @@ var actionStorageMiddleware = exports.actionStorageMiddleware = function actionS
     return function (action) {
       if (action && !action.$uuid) {
         var stampedAction = generateUuidForAction(action);
-        lastTimeStamp = stampedAction.$uuid;
+        lastUuid = stampedAction.$uuid;
         try {
           if (action.type === SEND_INIT_STATE) {
             if (getState()) {
@@ -97,18 +96,25 @@ function createStorageListener(store) {
   }
 
   window.addEventListener('storage', function (event) {
-    var stampedAction = JSON.parse(event.newValue);
-    if (stampedAction && stampedAction.$uuid !== lastTimeStamp) {
-      if (stampedAction.type === GET_INIT_STATE && isInitiated) {
-        store.dispatch(sendIniteState());
-      } else if (stampedAction.type === SEND_INIT_STATE) {
-        store.dispatch(receiveIniteState(stampedAction.payload));
-        isInitiated = true;
-      } else if (!!allowed(stampedAction.type)) {
-        lastTimeStamp = stampedAction.$uuid;
-        store.dispatch(stampedAction);
-        isInitiated = true;
+    try {
+      var stampedAction = JSON.parse(event.newValue);
+      // ignore other values that saved to localstorage.
+      if (stampedAction.$uuid) {
+        if (stampedAction && stampedAction.$uuid !== lastUuid) {
+          if (stampedAction.type === GET_INIT_STATE && isInitiated) {
+            store.dispatch(sendIniteState());
+          } else if (stampedAction.type === SEND_INIT_STATE) {
+            store.dispatch(receiveIniteState(stampedAction.payload));
+            isInitiated = true;
+          } else if (!!allowed(stampedAction.type)) {
+            lastUuid = stampedAction.$uuid;
+            store.dispatch(stampedAction);
+            isInitiated = true;
+          }
+        }
       }
+    } catch (e) {
+      // ignore other data format other than JSON
     }
   });
 }
