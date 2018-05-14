@@ -1,5 +1,4 @@
-/* global window localStorage true */
-let lastTimeStamp = 0;
+let lastUuid = 0;
 const LAST_ACTION = 'LAST_ACTION';
 const GET_INIT_STATE = '&_GET_INIT_STATE';
 const SEND_INIT_STATE = '&_SEND_INIT_STATE';
@@ -50,7 +49,7 @@ export const withReduxStateSync = (appReducer) => {
 export const actionStorageMiddleware = ({ getState }) => next => (action) => {
   if (action && !action.$uuid) {
     const stampedAction = generateUuidForAction(action);
-    lastTimeStamp = stampedAction.$uuid;
+    lastUuid = stampedAction.$uuid;
     try {
       if (action.type === SEND_INIT_STATE) {
         if (getState()) {
@@ -82,18 +81,25 @@ export function createStorageListener(store, config = defaultConfig) {
   }
 
   window.addEventListener('storage', (event) => {
-    const stampedAction = JSON.parse(event.newValue);
-    if (stampedAction && stampedAction.$uuid !== lastTimeStamp) {
-      if (stampedAction.type === GET_INIT_STATE && isInitiated) {
-        store.dispatch(sendIniteState());
-      } else if (stampedAction.type === SEND_INIT_STATE) {
-        store.dispatch(receiveIniteState(stampedAction.payload));
-        isInitiated = true;
-      } else if (!!allowed(stampedAction.type)) {
-        lastTimeStamp = stampedAction.$uuid;
-        store.dispatch(stampedAction);
-        isInitiated = true;
+    try {
+      const stampedAction = JSON.parse(event.newValue);
+      // ignore other values that saved to localstorage.
+      if (stampedAction.$uuid) {
+        if (stampedAction && stampedAction.$uuid !== lastUuid) {
+          if (stampedAction.type === GET_INIT_STATE && isInitiated) {
+            store.dispatch(sendIniteState());
+          } else if (stampedAction.type === SEND_INIT_STATE) {
+            store.dispatch(receiveIniteState(stampedAction.payload));
+            isInitiated = true;
+          } else if (!!allowed(stampedAction.type)) {
+            lastUuid = stampedAction.$uuid;
+            store.dispatch(stampedAction);
+            isInitiated = true;
+          }
+        }
       }
+    } catch (e) {
+      // ignore other data format other than JSON
     }
   });
 }
