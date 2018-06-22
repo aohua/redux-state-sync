@@ -2,17 +2,18 @@
 
 A lightweight middleware to sync your redux state across browser tabs. It will listen to the window storage event and dispatch exactly the same actions dispatched in other tabs to keep the redux state in sync. Furthermore, you can also pass a list of actions to ignore, so that they wouldn't be dispatched in other tabs (e.g. API requests).
 
-[![travis build](https://img.shields.io/travis/AOHUA/redux-state-sync.svg)](https://travis-ci.org/AOHUA/redux-state-sync)
-[![downloads](https://img.shields.io/npm/dm/redux-state-sync.svg)](https://www.npmjs.com/package/redux-state-sync)
+
+[<img src="https://img.shields.io/travis/AOHUA/redux-state-sync.svg">](https://travis-ci.org/AOHUA/redux-state-sync)
+[<img src="https://img.shields.io/npm/dm/redux-state-sync.svg">](https://www.npmjs.com/package/redux-state-sync)
 
 ### How to install
 
-Simply install it with npm.
+Install with npm or yarn.
 
 ```
 npm install --save redux-state-sync
 
-or
+or 
 
 yarn add redux-state-sync
 ```
@@ -25,7 +26,7 @@ Call `createStorageListener` to subscribe for storage events and dispatch action
 
 Follow the example below:
 
-```
+```javascript
 import { actionStorageMiddleware, createStorageListener } from 'redux-state-sync';
 
 /*
@@ -51,7 +52,7 @@ createStorageListener(store);
 
 You may not want to dispatch actions which trigger API requests. To prevent those actions from being dispatched, pass in a list of action types as strings:
 
-```
+```javascript
 const config = {
   ignore: ['CHANGE_USERNAME', 'REPO_REQUEST'],
 };
@@ -83,7 +84,7 @@ export default [
 
 Thanks to [Olebedev](https://github.com/olebedev), there's another way to ignore actions which you don't want to be dispatched. You can simply provide a predicate function in the config object:
 
-```
+```javascript
 const config = {
   predicate: actionType => actionType !== 'GET_REPO',
 };
@@ -97,14 +98,14 @@ How to init new tab with current tab's state
 
 By default this feature is disabled, you can enable it as below:
 
-```
+```javascript
 const config = {
   initiateWithState: true,
 };
 ```
 
 You also need to wrap your root reducer with 'withReduxStateSync' function.
-```
+```javascript
 import { withReduxStateSync } from 'redux-state-sync'
  
 const rootReducer = combineReducers({
