@@ -35,9 +35,13 @@ function s4() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
+// generate current window unique id
+var _WINDOW_STATE_SYNC_ID = guid();
+
 function generateUuidForAction(action) {
   var stampedAction = action;
   stampedAction.$uuid = guid();
+  stampedAction.$wuid = _WINDOW_STATE_SYNC_ID;
   return stampedAction;
 }
 
@@ -98,6 +102,12 @@ function createStorageListener(store) {
   window.addEventListener('storage', function (event) {
     try {
       var stampedAction = JSON.parse(event.newValue);
+      // ignore if this action is triggered by this window
+      // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
+      if (stampedAction.$wuid === _WINDOW_STATE_SYNC_ID) {
+        return;
+      }
+
       // ignore other values that saved to localstorage.
       if (stampedAction.$uuid) {
         if (stampedAction && stampedAction.$uuid !== lastUuid) {
