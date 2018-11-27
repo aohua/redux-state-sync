@@ -52,7 +52,9 @@
     "semantic-release": "^6.3.2",
     "webpack": "^2.4.1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "broadcast-channel": "^2.1.8"
+  },
   "jest": {
     "setupFiles": [
       "./__mocks__/envMock.js"

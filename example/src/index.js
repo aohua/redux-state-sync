@@ -5,16 +5,16 @@ import { createStore, applyMiddleware } from 'redux'
 import rootReducer from './reducers'
 import App from './components/App'
 import registerServiceWorker from './registerServiceWorker'
-import { actionStorageMiddleware, createStorageListener } from './lib/syncStorage'
+import { createStateSyncMiddleware, initStateWithPrevTab } from './lib/syncStorage'
 
 const middlewares = [
-  actionStorageMiddleware,
+  // TOGGLE_TODO will not be triggered
+  createStateSyncMiddleware({ initiateWithState: true, predicate: actionType => actionType !== 'TOGGLE_TODO' }),
 ];
  
-const store = createStore(rootReducer, {}, applyMiddleware(...middlewares))
+const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
 
-// TOGGLE_TODO will not be triggered
-createStorageListener(store, { initiateWithState: true, predicate: actionType => actionType !== 'TOGGLE_TODO' })
+initStateWithPrevTab(store);
  
 render(
   <Provider store={store}>

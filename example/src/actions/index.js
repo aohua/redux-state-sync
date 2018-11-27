@@ -13,6 +13,11 @@ export const toggleTodo = id => ({
   type: 'TOGGLE_TODO',
   id
 })
+
+export const todoOnChange = todo => ({
+  type: 'TODO_ON_CHANGE',
+  todo
+})
  
 export const VisibilityFilters = {
   SHOW_ALL: 'SHOW_ALL',
