@@ -4,7 +4,7 @@
   "description": "A middleware for redux to sync state in different tabs",
   "main": "dist/syncStorage.js",
   "scripts": {
-    "test": "jest --clearCache",
+    "test": "jest",
     "commit": "git-cz",
     "prebuild": "rimraf dist",
     "build": "npm-run-all --parallel build:*",
