@@ -3,18 +3,30 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createStateSyncMiddleware = undefined;
 exports.generateUuidForAction = generateUuidForAction;
-exports.createStorageListener = createStorageListener;
-var lastUuid = 0;
-var LAST_ACTION = 'LAST_ACTION';
+exports.isActionAllowed = isActionAllowed;
+exports.createMessageListener = createMessageListener;
+
+var _broadcastChannel = require('broadcast-channel');
+
+var _broadcastChannel2 = _interopRequireDefault(_broadcastChannel);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var lastUuid = 0; /* eslint-env browser */
+
 var GET_INIT_STATE = '&_GET_INIT_STATE';
 var SEND_INIT_STATE = '&_SEND_INIT_STATE';
 var RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
 
 var defaultConfig = {
+  channel: 'redux_state_sync',
   initiateWithState: false,
   predicate: null,
-  ignore: []
+  blacklist: [],
+  whitelist: [],
+  broadcastChannelOption: null
 };
 
 var getIniteState = function getIniteState() {
@@ -27,104 +39,134 @@ var receiveIniteState = function receiveIniteState(state) {
   return { type: RECEIVE_INIT_STATE, payload: state };
 };
 
-function guid() {
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
-
 function s4() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
-// generate current window unique id
-var _WINDOW_STATE_SYNC_ID = guid();
+function guid() {
+  return '' + s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
 
+// generate current window unique id
+var WINDOW_STATE_SYNC_ID = guid();
+// if the message receiver is already created
+var isMessageListenerCreated = false;
+// export for test
 function generateUuidForAction(action) {
   var stampedAction = action;
   stampedAction.$uuid = guid();
-  stampedAction.$wuid = _WINDOW_STATE_SYNC_ID;
+  stampedAction.$wuid = WINDOW_STATE_SYNC_ID;
   return stampedAction;
 }
+// export for test
+function isActionAllowed(_ref) {
+  var predicate = _ref.predicate,
+      blacklist = _ref.blacklist,
+      whitelist = _ref.whitelist;
 
-var withReduxStateSync = exports.withReduxStateSync = function withReduxStateSync(appReducer) {
-  return function (state, action) {
-    if (action.type === RECEIVE_INIT_STATE) {
-      state = action.payload;
-    }
-    return appReducer(state, action);
-  };
-};
-
-var actionStorageMiddleware = exports.actionStorageMiddleware = function actionStorageMiddleware(_ref) {
-  var getState = _ref.getState;
-  return function (next) {
-    return function (action) {
-      if (action && !action.$uuid) {
-        var stampedAction = generateUuidForAction(action);
-        lastUuid = stampedAction.$uuid;
-        try {
-          if (action.type === SEND_INIT_STATE) {
-            if (getState()) {
-              stampedAction.payload = getState();
-              localStorage.setItem(LAST_ACTION, JSON.stringify(stampedAction));
-            }
-            return next(action);
-          }
-          localStorage.setItem(LAST_ACTION, JSON.stringify(stampedAction));
-        } catch (e) {
-          console.error("Your browser doesn't support localStorage");
-        }
-      }
-      return next(action);
-    };
-  };
-};
-
-function createStorageListener(store) {
-  var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultConfig;
-
-  var isInitiated = false;
   var allowed = function allowed() {
     return true;
   };
 
-  if (config.predicate && typeof config.predicate === 'function') {
-    allowed = config.predicate;
-  } else if (Array.isArray(config.ignore)) {
+  if (predicate && typeof predicate === 'function') {
+    allowed = predicate;
+  } else if (Array.isArray(blacklist)) {
     allowed = function allowed(type) {
-      return config.ignore.indexOf(type) < 0;
+      return blacklist.indexOf(type) < 0;
+    };
+  } else if (Array.isArray(whitelist)) {
+    allowed = function allowed(type) {
+      return whitelist.indexOf(type) >= 0;
     };
   }
+  return allowed;
+}
+// export for test
+function createMessageListener(_ref2) {
+  var channel = _ref2.channel,
+      dispatch = _ref2.dispatch,
+      allowed = _ref2.allowed;
 
-  if (config.initiateWithState) {
-    store.dispatch(getIniteState());
-  }
-
-  window.addEventListener('storage', function (event) {
-    try {
-      var stampedAction = JSON.parse(event.newValue);
-      // ignore if this action is triggered by this window
-      // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-      if (stampedAction.$wuid === _WINDOW_STATE_SYNC_ID) {
-        return;
-      }
-
-      // ignore other values that saved to localstorage.
-      if (stampedAction.$uuid) {
-        if (stampedAction && stampedAction.$uuid !== lastUuid) {
-          if (stampedAction.type === GET_INIT_STATE && isInitiated) {
-            store.dispatch(sendIniteState());
-          } else if (stampedAction.type === SEND_INIT_STATE) {
-            store.dispatch(receiveIniteState(stampedAction.payload));
-            isInitiated = true;
-          } else if (!!allowed(stampedAction.type)) {
-            lastUuid = stampedAction.$uuid;
-            store.dispatch(stampedAction);
-            isInitiated = true;
-          }
+  var isInitiated = false;
+  var messageChannel = channel;
+  messageChannel.onmessage = function (stampedAction) {
+    // ignore if this action is triggered by this window
+    // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
+    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
+      return;
+    }
+    // ignore other values that saved to localstorage.
+    if (stampedAction.$uuid) {
+      if (stampedAction && stampedAction.$uuid !== lastUuid) {
+        if (stampedAction.type === GET_INIT_STATE && isInitiated) {
+          dispatch(sendIniteState());
+        } else if (stampedAction.type === SEND_INIT_STATE) {
+          dispatch(receiveIniteState(stampedAction.payload));
+          isInitiated = true;
+        } else if (allowed(stampedAction.type)) {
+          lastUuid = stampedAction.$uuid;
+          dispatch(stampedAction);
+          isInitiated = true;
         }
       }
-    } catch (e) {
-      // ignore other data format other than JSON
     }
-  });
+  };
 }
+
+var createStateSyncMiddleware = exports.createStateSyncMiddleware = function createStateSyncMiddleware() {
+  var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultConfig;
+
+  var allowed = isActionAllowed(config);
+  var channel = new _broadcastChannel2.default(config.channel, config.broadcastChannelOption);
+
+  return function (_ref3) {
+    var getState = _ref3.getState,
+        dispatch = _ref3.dispatch;
+    return function (next) {
+      return function (action) {
+        // create message receiver
+        if (!isMessageListenerCreated) {
+          isMessageListenerCreated = true;
+          createMessageListener({ channel: channel, dispatch: dispatch, allowed: allowed });
+        }
+        // post messages
+        if (action && !action.$uuid) {
+          var stampedAction = generateUuidForAction(action);
+          lastUuid = stampedAction.$uuid;
+          try {
+            if (action.type === SEND_INIT_STATE) {
+              if (getState()) {
+                stampedAction.payload = getState();
+                channel.postMessage(stampedAction);
+              }
+              return next(action);
+            }
+            if (allowed(stampedAction.type)) {
+              channel.postMessage(stampedAction);
+            }
+          } catch (e) {
+            console.error("Your browser doesn't support cross tab communication");
+          }
+        }
+        return next(action);
+      };
+    };
+  };
+};
+
+// init state with other tab's state
+var withReduxStateSync = exports.withReduxStateSync = function withReduxStateSync(appReducer) {
+  return function (state, action) {
+    var initState = state;
+    if (action.type === RECEIVE_INIT_STATE) {
+      initState = action.payload;
+    }
+    return appReducer(initState, action);
+  };
+};
+
+var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWithPrevTab(_ref4) {
+  var dispatch = _ref4.dispatch;
+
+  dispatch(getIniteState());
+};

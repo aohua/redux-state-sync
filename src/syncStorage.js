@@ -12,6 +12,7 @@ const defaultConfig = {
   predicate: null,
   blacklist: [],
   whitelist: [],
+  broadcastChannelOption: null,
 };
 
 const getIniteState = () => ({ type: GET_INIT_STATE });
@@ -34,15 +35,15 @@ function guid() {
 const WINDOW_STATE_SYNC_ID = guid();
 // if the message receiver is already created
 let isMessageListenerCreated = false;
-
-function generateUuidForAction(action) {
+// export for test
+export function generateUuidForAction(action) {
   const stampedAction = action;
   stampedAction.$uuid = guid();
   stampedAction.$wuid = WINDOW_STATE_SYNC_ID;
   return stampedAction;
 }
-
-function isActionAllowed({ predicate, blacklist, whitelist }) {
+// export for test
+export function isActionAllowed({ predicate, blacklist, whitelist }) {
   let allowed = () => true;
 
   if (predicate && typeof predicate === 'function') {
@@ -54,17 +55,8 @@ function isActionAllowed({ predicate, blacklist, whitelist }) {
   }
   return allowed;
 }
-
-export const withReduxStateSync = appReducer =>
-  ((state, action) => {
-    let initState = state;
-    if (action.type === RECEIVE_INIT_STATE) {
-      initState = action.payload;
-    }
-    return appReducer(initState, action);
-  });
-
-function createMessageListener({ channel, dispatch, allowed }) {
+// export for test
+export function createMessageListener({ channel, dispatch, allowed }) {
   let isInitiated = false;
   const messageChannel = channel;
   messageChannel.onmessage = (stampedAction) => {
@@ -91,13 +83,9 @@ function createMessageListener({ channel, dispatch, allowed }) {
   };
 }
 
-export const initStateWithPrevTab = ({ dispatch }) => {
-  dispatch(getIniteState());
-}
-
 export const createStateSyncMiddleware = (config = defaultConfig) => {
   const allowed = isActionAllowed(config);
-  const channel = new BroadcastChannel(config.channel);
+  const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
 
   return ({ getState, dispatch }) => next => (action) => {
     // create message receiver
@@ -126,4 +114,18 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
     }
     return next(action);
   };
+};
+
+// init state with other tab's state
+export const withReduxStateSync = appReducer =>
+  ((state, action) => {
+    let initState = state;
+    if (action.type === RECEIVE_INIT_STATE) {
+      initState = action.payload;
+    }
+    return appReducer(initState, action);
+  });
+
+export const initStateWithPrevTab = ({ dispatch }) => {
+  dispatch(getIniteState());
 };

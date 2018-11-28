@@ -1,33 +1,46 @@
 /* global jest window localStorage describe it test expect */
-import { actionStorageMiddleware, createStorageListener, generateUuidForAction } from '../dist/syncStorage';
+import { generateUuidForAction, isActionAllowed } from '../dist/syncStorage';
 
-const LAST_ACTION = 'LAST_ACTION';
-let triggeredAction = {};
-let stampedAction = {};
-const store = {
-  dispatch(action) {
-    triggeredAction = action;
-  },
-};
-
-describe('dispatch a test action', () => {
-  createStorageListener(store);
-  it('action should have $uuid added', () => {
+describe('action should have uuid', () => {
+  it('action should have both $uuid and $wuid', () => {
     const action = { type: 'Test', payload: 'Test' };
-    expect(generateUuidForAction(action).$uuid).toBeDefined();
+    const stampedAction = generateUuidForAction(action);
+    expect(stampedAction.$uuid).toBeDefined();
+    expect(stampedAction.$wuid).toBeDefined();
   });
+  it('action should have different $uuid and same $wuid', () => {
+    const action1 = { type: 'Test', payload: 'Test' };
+    const action2 = { type: 'Test', payload: 'Test' };
+    const stampedAction1 = generateUuidForAction(action1);
+    const stampedAction2 = generateUuidForAction(action2);
+    expect(stampedAction1.$uuid === stampedAction2.$uuid).toBeFalsy();
+    expect(stampedAction1.$wuid === stampedAction2.$wuid).toBeTruthy();
+  });
+});
 
-  it('action should be saved into localStorage', () => {
+describe('is action allowed', () => {
+  it('action in blacklist should not be triggered', () => {
+    const predicate = null;
+    const blacklist = ['Test'];
+    const whitelist = [];
+    const allowed = isActionAllowed({ predicate, blacklist, whitelist });
     const action = { type: 'Test', payload: 'Test' };
-    const getState = () => {};
-    actionStorageMiddleware({ getState })(next => next)(action);
-    stampedAction = action;
-    expect(localStorage.getItem(LAST_ACTION)).toBeDefined();
+    expect(allowed(action.type)).toBeFalsy();
   });
-
-  it('same action should not be triggered, because the timestamp is the same as the latest timestamp', () => {
-    expect(triggeredAction.type).toBe(undefined);
-    expect(triggeredAction.payload).toBe(undefined);
-    expect(triggeredAction.$uuid).toBe(undefined);
+  it('action in blacklist and whitelist should not be triggered', () => {
+    const predicate = null;
+    const blacklist = ['Test'];
+    const whitelist = ['Test'];
+    const allowed = isActionAllowed({ predicate, blacklist, whitelist });
+    const action = { type: 'Test', payload: 'Test' };
+    expect(allowed(action.type)).toBeFalsy();
+  });
+  it('action in blacklist and predicate should be triggered', () => {
+    const predicate = type => type === 'Test';
+    const blacklist = ['Test'];
+    const whitelist = ['Test'];
+    const allowed = isActionAllowed({ predicate, blacklist, whitelist });
+    const action = { type: 'Test', payload: 'Test' };
+    expect(allowed(action.type)).toBeTruthy();
   });
 });
