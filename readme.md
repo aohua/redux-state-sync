@@ -1,3 +1,8 @@
+<p align="center">
+  <a href="https://github.com/AOHUA/redux-state-sync">
+    <img src="./logo.png" width="300px" />
+  </a>
+</p>
 # Redux-State-Sync 2.0
 
 A lightweight middleware to sync your redux state across browser tabs. It will listen to the Broadcast Channel and dispatch exactly the same actions dispatched in other tabs to keep the redux state in sync.
