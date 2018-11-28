@@ -87,27 +87,29 @@ function createMessageListener(_ref2) {
       dispatch = _ref2.dispatch,
       allowed = _ref2.allowed;
 
-  var isInitiated = false;
+  var isSynced = false;
+  var tabs = {};
   var messageChannel = channel;
   messageChannel.onmessage = function (stampedAction) {
     // ignore if this action is triggered by this window
     // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
+    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID || stampedAction.type === RECEIVE_INIT_STATE) {
       return;
     }
     // ignore other values that saved to localstorage.
-    if (stampedAction.$uuid) {
-      if (stampedAction && stampedAction.$uuid !== lastUuid) {
-        if (stampedAction.type === GET_INIT_STATE && isInitiated) {
-          dispatch(sendIniteState());
-        } else if (stampedAction.type === SEND_INIT_STATE) {
+    if (stampedAction.$uuid && stampedAction.$uuid !== lastUuid) {
+      if (stampedAction.type === GET_INIT_STATE && !tabs[stampedAction.$wuid]) {
+        tabs[stampedAction.$wuid] = true;
+        dispatch(sendIniteState());
+      } else if (stampedAction.type === SEND_INIT_STATE && !tabs[stampedAction.$wuid]) {
+        if (!isSynced) {
+          isSynced = true;
           dispatch(receiveIniteState(stampedAction.payload));
-          isInitiated = true;
-        } else if (allowed(stampedAction.type)) {
-          lastUuid = stampedAction.$uuid;
-          dispatch(stampedAction);
-          isInitiated = true;
         }
+        return;
+      } else if (allowed(stampedAction.type)) {
+        lastUuid = stampedAction.$uuid;
+        dispatch(stampedAction);
       }
     }
   };
@@ -141,7 +143,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
               }
               return next(action);
             }
-            if (allowed(stampedAction.type)) {
+            if (allowed(stampedAction.type) || action.type === GET_INIT_STATE) {
               channel.postMessage(stampedAction);
             }
           } catch (e) {
