@@ -57,8 +57,6 @@ const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
 // init state with other tabs
 initStateWithPrevTab(store);
 ```
-##### Note: ignore this if you are using `redux-persist`, because you will always inite your app with the state in the storage. However, if you don't want to persist the state in the storage and still want to init new tabs with opening tabs' state, you can follow the example above.
-
 2. Wrap your root reducer with `withReduxStateSync`
 ```javascript
 import { withReduxStateSync } from 'redux-state-sync'
@@ -70,6 +68,8 @@ const rootReducer = combineReducers({
 
 export default withReduxStateSync(rootReducer)
 ```
+
+##### Note: ignore this if you are using `redux-persist`, because you will always inite your app with the state in the storage. However, if you don't want to persist the state in the storage and still want to init new tabs with opening tabs' state, you can follow the example above.
 
 ### Config
 #### channel
