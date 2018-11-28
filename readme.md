@@ -1,6 +1,6 @@
-# Redux-State-Sync
+# Redux-State-Sync 2.0
 
-A lightweight middleware to sync your redux state across browser tabs. It will listen to the window storage event and dispatch exactly the same actions dispatched in other tabs to keep the redux state in sync. Furthermore, you can also pass a list of actions to ignore, so that they wouldn't be dispatched in other tabs (e.g. API requests).
+A lightweight middleware to sync your redux state across browser tabs. It will listen to the Broadcast Channel and dispatch exactly the same actions dispatched in other tabs to keep the redux state in sync.
 
 
 [<img src="https://img.shields.io/travis/AOHUA/redux-state-sync.svg">](https://travis-ci.org/AOHUA/redux-state-sync)
@@ -8,103 +8,58 @@ A lightweight middleware to sync your redux state across browser tabs. It will l
 
 ### How to install
 
-Install with npm or yarn.
+Install with npm.
 
 ```
 npm install --save redux-state-sync
-
-or 
-
+```
+Install with yarn
+```
 yarn add redux-state-sync
 ```
 
 ### How to use
 
-import `actionStorageMiddleware` and `createStorageListener`.
-Add actionStorageMiddleware to the list of middlewares during store creation.
-Call `createStorageListener` to subscribe for storage events and dispatch actions to change store state.
+Create the state sync middleware with config:
 
-Follow the example below:
 
 ```javascript
-import { actionStorageMiddleware, createStorageListener } from 'redux-state-sync';
+import { createStore, applyMiddleware } from 'redux'
+import { createStateSyncMiddleware } from 'redux-state-sync';
 
-/*
-*  actionStorageMiddleware is used to persist your last action being triggered.
-*/
+const config = {
+  // TOGGLE_TODO will not be triggered in other tabs
+  blacklist: ['TOGGLE_TODO'],
+}
 const middlewares = [
-  sagaMiddleware,
-  logger,
-  actionStorageMiddleware,
-  routerMiddleware(history),
+  createStateSyncMiddleware(config),
 ];
-
-const store = createStore(
-  createReducer(),
-  fromJS(initialState),
-  applyMiddleware(...middlewares)
-);
-/*
-*  Create a listener on store to dispatch the latest action being triggered on other tabs.
-*/
-createStorageListener(store);
+ 
+const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
 ```
 
-You may not want to dispatch actions which trigger API requests. To prevent those actions from being dispatched, pass in a list of action types as strings:
+Init new tabs with existing state:
 
+1. Use initStateWithPrevTab to get existing state from other tabs
 ```javascript
+import { createStore, applyMiddleware } from 'redux'
+import { createStateSyncMiddleware, initStateWithPrevTab } from 'redux-state-sync';
+
 const config = {
-  ignore: ['CHANGE_USERNAME', 'REPO_REQUEST'],
-};
-createStorageListener(store, config);
-
-/*
-*  To still make your state sync. You need to trigger other actions with the data from the api request.
-*  The example is using redux-saga to handle the side effects.
-*/
-
-export function* fetchRepoSaga(action) {
-  try {
-    const repo = yield call(api.fetchRepo, action.url);
-    /* Triggers a REPO_SUCCESS and this action should be triggered in other tabs also */
-    yield put({ type: 'REPO_SUCCESS', repo });
-  } catch (e) {
-    yield put({ type: 'REPO_FAILURE', message: e.message });
-  }
+  // TOGGLE_TODO will not be triggered in other tabs
+  blacklist: ['TOGGLE_TODO'],
 }
-
-export function* fetchRepoWatcher() {
-  yield* takeLatest(REPO.REQUEST, fetchRepoSaga);
-}
-
-export default [
-  fetchRepoWatcher,
+const middlewares = [
+  createStateSyncMiddleware(config),
 ];
+ 
+const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
+// init state with other tabs
+initStateWithPrevTab(store);
 ```
+#####Note: ignore this if you are using `redux-persist`, because you will always inite your app with the state in the storage. However, if you don't want to persist the state in the storage and still want to init new tabs with opening tabs' state, you can follow the example above.
 
-Thanks to [Olebedev](https://github.com/olebedev), there's another way to ignore actions which you don't want to be dispatched. You can simply provide a predicate function in the config object:
-
-```javascript
-const config = {
-  predicate: actionType => actionType !== 'GET_REPO',
-};
-```
-
-GET_REPO action will not be triggered in other tabs in this case.
-
-### Experimental feature
-
-How to init new tab with current tab's state
-
-By default this feature is disabled, you can enable it as below:
-
-```javascript
-const config = {
-  initiateWithState: true,
-};
-```
-
-You also need to wrap your root reducer with 'withReduxStateSync' function.
+2. Wrap your root reducer with `withReduxStateSync`
 ```javascript
 import { withReduxStateSync } from 'redux-state-sync'
  
@@ -116,4 +71,76 @@ const rootReducer = combineReducers({
 export default withReduxStateSync(rootReducer)
 ```
 
-This feature is totally experimental, you shall use it at your own risk. ;-)
+### Config
+#### channel
+Unique name for Broadcast Channel
+type: `String`
+default: "redux_state_sync"
+
+```javascript
+const config = {
+  channel: 'my_broadcast_channel',
+}
+const middlewares = [
+  createStateSyncMiddleware(config),
+];
+```
+#### predicate
+A function to let you filter the actions as you wanted.
+type: `Function`
+default: null
+
+```javascript
+const config = {
+  // All actions will be triggered in other tabs except 'TOGGLE_TODO'
+  predicate: actionType => actionType !== 'TOGGLE_TODO'
+}
+const middlewares = [
+  createStateSyncMiddleware(config),
+];
+```
+#### blacklist
+A list of action types that you don't want to be triggered in other tabs.
+type: `ArrayOf(<String>)`
+default: []
+
+```javascript
+const config = {
+  // All actions will be triggered in other tabs except 'TOGGLE_TODO'
+  blacklist: ['TOGGLE_TODO']
+}
+const middlewares = [
+  createStateSyncMiddleware(config),
+];
+```
+#### whitelist
+Only actions in this list will be triggered in other tabs.
+type: `ArrayOf(<String>)`
+default: []
+
+```javascript
+const config = {
+  // Only 'TOGGLE_TODO' will be triggered in other tabs
+  whitelist: ['TOGGLE_TODO']
+}
+const middlewares = [
+  createStateSyncMiddleware(config),
+];
+```
+#####Warning: You should only use one of the option to filter your actions. if you have all 3 options predicate, blacklist, and whitelist, only one will be effective and the priority is predicate > blacklist > whitelist.
+
+#### broadcastChannelOption
+Redux-state-sync is using [BroadcastChannel](https://github.com/pubkey/broadcast-channel) to comunicate between tabs. broadcastChannelOption is the option passed to broadcastChannel when we creating the channel.
+type: `Object`
+default: null
+```javascript
+const config = {
+  // Only 'TOGGLE_TODO' will be triggered in other tabs
+  whitelist: ['TOGGLE_TODO'],
+  // enforce a type, oneOf['native', 'idb', 'localstorage', 'node']
+  broadcastChannelOption: { type: 'localstorage' },
+}
+const middlewares = [
+  createStateSyncMiddleware(config),
+];
+```

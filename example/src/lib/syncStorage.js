@@ -8,7 +8,6 @@ const RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
 
 const defaultConfig = {
   channel: 'redux_state_sync',
-  initiateWithState: false,
   predicate: null,
   blacklist: [],
   whitelist: [],
@@ -69,12 +68,10 @@ export function createMessageListener({ channel, dispatch, allowed }) {
     // ignore other values that saved to localstorage.
     if (stampedAction.$uuid && stampedAction.$uuid !== lastUuid) {
       if (stampedAction.type === GET_INIT_STATE && !tabs[stampedAction.$wuid]) {
-        console.log('GET_INIT_STATE', stampedAction);
         tabs[stampedAction.$wuid] = true;
         dispatch(sendIniteState());
       } else if (stampedAction.type === SEND_INIT_STATE && !tabs[stampedAction.$wuid]) {
         if (!isSynced) {
-          console.log('SEND_INIT_STATE', stampedAction);
           isSynced = true;
           dispatch(receiveIniteState(stampedAction.payload));
         }

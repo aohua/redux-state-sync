@@ -22,7 +22,6 @@ var RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
 
 var defaultConfig = {
   channel: 'redux_state_sync',
-  initiateWithState: false,
   predicate: null,
   blacklist: [],
   whitelist: [],
