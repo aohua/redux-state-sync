@@ -57,8 +57,6 @@ const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
 // init state with other tabs
 initStateWithPrevTab(store);
 ```
-#####Note: ignore this if you are using `redux-persist`, because you will always inite your app with the state in the storage. However, if you don't want to persist the state in the storage and still want to init new tabs with opening tabs' state, you can follow the example above.
-
 2. Wrap your root reducer with `withReduxStateSync`
 ```javascript
 import { withReduxStateSync } from 'redux-state-sync'
@@ -70,6 +68,8 @@ const rootReducer = combineReducers({
 
 export default withReduxStateSync(rootReducer)
 ```
+
+##### Note: ignore this if you are using `redux-persist`, because you will always inite your app with the state in the storage. However, if you don't want to persist the state in the storage and still want to init new tabs with opening tabs' state, you can follow the example above.
 
 ### Config
 #### channel
@@ -127,7 +127,7 @@ const middlewares = [
   createStateSyncMiddleware(config),
 ];
 ```
-#####Warning: You should only use one of the option to filter your actions. if you have all 3 options predicate, blacklist, and whitelist, only one will be effective and the priority is predicate > blacklist > whitelist.
+##### Warning: You should only use one of the option to filter your actions. if you have all 3 options predicate, blacklist, and whitelist, only one will be effective and the priority is predicate > blacklist > whitelist.
 
 #### broadcastChannelOption
 Redux-state-sync is using [BroadcastChannel](https://github.com/pubkey/broadcast-channel) to comunicate between tabs. broadcastChannelOption is the option passed to broadcastChannel when we creating the channel.
