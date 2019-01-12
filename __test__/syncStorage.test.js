@@ -1,5 +1,5 @@
 /* global jest window localStorage describe it test expect */
-import { generateUuidForAction, isActionAllowed } from '../dist/syncStorage';
+import { generateUuidForAction, isActionAllowed } from '../dist/syncState';
 
 describe('action should have uuid', () => {
   it('action should have both $uuid and $wuid', () => {
