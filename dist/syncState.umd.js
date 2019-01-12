@@ -1261,4 +1261,4 @@ function averageResponseTime() {
 /***/ })
 /******/ ]);
 });
-//# sourceMappingURL=syncStorage.umd.js.map
+//# sourceMappingURL=syncState.umd.js.map

@@ -2,15 +2,15 @@
   "name": "redux-state-sync",
   "version": "2.0.2",
   "description": "A middleware for redux to sync state in different tabs",
-  "main": "dist/syncStorage.js",
+  "main": "dist/syncState.js",
   "scripts": {
     "test": "jest",
     "commit": "git-cz",
     "prebuild": "rimraf dist",
     "build": "npm-run-all --parallel build:*",
     "build:main": "babel --copy-files --out-dir dist --ignore *.test.js src",
-    "build:umd": "webpack --output-filename syncStorage.umd.js",
-    "build:umd.min": "webpack --output-filename syncStorage.umd.min.js -p",
+    "build:umd": "webpack --output-filename syncState.umd.js",
+    "build:umd.min": "webpack --output-filename syncState.umd.min.js -p",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "repository": {
