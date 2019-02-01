@@ -1,6 +1,6 @@
 {
   "name": "redux-state-sync",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A middleware for redux to sync state in different tabs",
   "main": "dist/syncState.js",
   "scripts": {
