@@ -29,6 +29,18 @@ Install with yarn
 yarn add redux-state-sync
 ```
 
+### TypeScript support
+Install with npm.
+
+```
+npm install --save-dev @types/redux-state-sync
+```
+Install with yarn
+```
+yarn add --dev @types/redux-state-sync
+```
+
+
 ### How to use
 
 Create the state sync middleware with config:
