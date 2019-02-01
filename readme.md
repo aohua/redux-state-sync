@@ -39,7 +39,7 @@ Install with yarn
 ```
 yarn add --dev @types/redux-state-sync
 ```
-
+Types are defined [here](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/e6e55443f88128b6393105407c8e8239cb10509b/types/redux-state-sync/index.d.ts)
 
 ### How to use
 
