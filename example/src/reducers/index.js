@@ -1,13 +1,12 @@
-import { combineReducers } from 'redux'
-import todo from './todo'
-import todos from './todos'
-import visibilityFilter from './visibilityFilter'
-import { withReduxStateSync } from '../lib/syncStorage'
- 
+import { combineReducers } from "redux";
+import todo from "./todo";
+import todos from "./todos";
+import visibilityFilter from "./visibilityFilter";
+import { withReduxStateSync } from "../lib/syncState";
 const appReducer = combineReducers({
   todo,
   todos,
-  visibilityFilter
-})
+  visibilityFilter,
+});
 
-export default withReduxStateSync(appReducer)
+export default withReduxStateSync(appReducer);
