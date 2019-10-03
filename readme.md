@@ -177,3 +177,19 @@ const middlewares = [
   createStateSyncMiddleware(config),
 ];
 ```
+
+#### prepareState
+Prepare state for sending to channel. Will be helpful when using Immutable.js
+
+type: `Function`
+
+default: state => state
+```javascript
+const config = {
+  // Map immutable object to js
+  prepareState: state => state.toJS()
+}
+const middlewares = [
+  createStateSyncMiddleware(config),
+];
+```

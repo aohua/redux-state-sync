@@ -25,7 +25,10 @@ var defaultConfig = {
   predicate: null,
   blacklist: [],
   whitelist: [],
-  broadcastChannelOption: null
+  broadcastChannelOption: null,
+  prepareState: function prepareState(state) {
+    return state;
+  }
 };
 
 var getIniteState = function getIniteState() {
@@ -119,6 +122,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
 
   var allowed = isActionAllowed(config);
   var channel = new _broadcastChannel2.default(config.channel, config.broadcastChannelOption);
+  var prepareState = config.prepareState || defaultConfig.prepareState;
 
   return function (_ref3) {
     var getState = _ref3.getState,
@@ -137,7 +141,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
           try {
             if (action.type === SEND_INIT_STATE) {
               if (getState()) {
-                stampedAction.payload = getState();
+                stampedAction.payload = prepareState(getState());
                 channel.postMessage(stampedAction);
               }
               return next(action);
