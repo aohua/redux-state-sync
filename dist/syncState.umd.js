@@ -476,7 +476,7 @@ function _stopListening(channel) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createStateSyncMiddleware = undefined;
+exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
 exports.generateUuidForAction = generateUuidForAction;
 exports.isActionAllowed = isActionAllowed;
 exports.createMessageListener = createMessageListener;
@@ -632,19 +632,28 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
   };
 };
 
-// init state with other tab's state
-var withReduxStateSync = exports.withReduxStateSync = function withReduxStateSync(appReducer) {
-  return function (state, action) {
-    var initState = state;
-    if (action.type === RECEIVE_INIT_STATE) {
-      initState = action.payload;
-    }
-    return appReducer(initState, action);
+var createReduxStateSync = exports.createReduxStateSync = function createReduxStateSync(_ref4) {
+  var prepareState = _ref4.prepareState;
+  return function (appReducer) {
+    return function (state, action) {
+      var initState = state;
+      if (action.type === RECEIVE_INIT_STATE) {
+        initState = prepareState(action.payload);
+      }
+      return appReducer(initState, action);
+    };
   };
 };
 
-var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWithPrevTab(_ref4) {
-  var dispatch = _ref4.dispatch;
+// init state with other tab's state
+var withReduxStateSync = exports.withReduxStateSync = createReduxStateSync({
+  prepareState: function prepareState(state) {
+    return state;
+  }
+});
+
+var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWithPrevTab(_ref5) {
+  var dispatch = _ref5.dispatch;
 
   dispatch(getIniteState());
 };
