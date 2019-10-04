@@ -1,5 +1,5 @@
 /* global jest window localStorage describe it test expect */
-import { generateUuidForAction, isActionAllowed } from '../dist/syncState';
+import { generateUuidForAction, isActionAllowed, createStateSyncMiddleware } from '../dist/syncState';
 
 describe('action should have uuid', () => {
   it('action should have both $uuid and $wuid', () => {
@@ -42,5 +42,21 @@ describe('is action allowed', () => {
     const allowed = isActionAllowed({ predicate, blacklist, whitelist });
     const action = { type: 'Test', payload: 'Test' };
     expect(allowed(action.type)).toBeTruthy();
+  });
+});
+
+describe('state should be mapped', () => {
+  it('state mapped to JSON', () => {
+    const mockState = {
+      test: 'Test',
+    };
+    const mockStore = {
+      getState: () => mockState,
+      dispatch: () => {},
+    };
+
+    const next = action => expect(action.payload).toEqual(JSON.stringify(mockState));
+
+    createStateSyncMiddleware({ prepareState: JSON.stringify })(mockStore)(next)({ type: '&_SEND_INIT_STATE' });
   });
 });

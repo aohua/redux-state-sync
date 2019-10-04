@@ -12,6 +12,7 @@ const defaultConfig = {
   blacklist: [],
   whitelist: [],
   broadcastChannelOption: null,
+  prepareState: state => state
 };
 
 const getIniteState = () => ({ type: GET_INIT_STATE });
@@ -87,6 +88,7 @@ export function createMessageListener({ channel, dispatch, allowed }) {
 export const createStateSyncMiddleware = (config = defaultConfig) => {
   const allowed = isActionAllowed(config);
   const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
+  const prepareState = config.prepareState || defaultConfig.prepareState;
 
   return ({ getState, dispatch }) => next => (action) => {
     // create message receiver
@@ -101,7 +103,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
       try {
         if (action.type === SEND_INIT_STATE) {
           if (getState()) {
-            stampedAction.payload = getState();
+            stampedAction.payload = prepareState(getState());
             channel.postMessage(stampedAction);
           }
           return next(action);
@@ -117,15 +119,19 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
   };
 };
 
-// init state with other tab's state
-export const withReduxStateSync = appReducer =>
+export const createReduxStateSync = ({ prepareState }) => appReducer =>
   ((state, action) => {
     let initState = state;
     if (action.type === RECEIVE_INIT_STATE) {
-      initState = action.payload;
+      initState = prepareState(action.payload);
     }
     return appReducer(initState, action);
   });
+
+// init state with other tab's state
+export const withReduxStateSync = createReduxStateSync({
+  prepareState: state => state
+})
 
 export const initStateWithPrevTab = ({ dispatch }) => {
   dispatch(getIniteState());
