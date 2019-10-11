@@ -86,10 +86,9 @@ export function createMessageListener({ channel, dispatch, allowed }) {
         return;
       } else if (allowed(stampedAction.type)) {
         lastUuid = stampedAction.$uuid;
-        dispatch({
-          ...stampedAction,
-          $isSync: true
-        });
+        dispatch(Object.assign(stampedAction, {
+          $isSync: true,
+        }));
       }
     }
   };
@@ -125,10 +124,9 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
         console.error("Your browser doesn't support cross tab communication");
       }
     }
-    return next({
-      ...action,
-      $isSync: typeof action.$isSync === 'undefined' ? false : action.$isSync
-    });
+    return next(Object.assign(action, {
+      $isSync: typeof action.$isSync === 'undefined' ? false : action.$isSync,
+    }));
   };
 };
 
