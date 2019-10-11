@@ -56,6 +56,10 @@ export function isActionAllowed({ predicate, blacklist, whitelist }) {
   return allowed;
 }
 // export for test
+export function isActionSynced(action) {
+  return !!action.$isSync;
+}
+// export for test
 export function createMessageListener({ channel, dispatch, allowed }) {
   let isSynced = false;
   const tabs = {};
@@ -121,7 +125,10 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
         console.error("Your browser doesn't support cross tab communication");
       }
     }
-    return next(action);
+    return next({
+      ...action,
+      $isSync: typeof action.$isSync === 'undefined' ? false : action.$isSync
+    });
   };
 };
 
