@@ -41,9 +41,9 @@ describe('is action allowed', () => {
     const whitelist = ['Test'];
     const allowed = isActionAllowed({ predicate, blacklist, whitelist });
     const action = { type: 'Test', payload: 'Test' };
-    expect(allowed(action.type)).toBeTruthy();
+    expect(allowed(action.type, action)).toBeTruthy();
     const action2 = { type: 'SecondTest', payload: 'Test' };
-    expect(allowed(action2.type)).toBeTruthy();
+    expect(allowed(action2.type, action2)).toBeTruthy();
   });
 });
 
