@@ -582,7 +582,7 @@ function createMessageListener(_ref2) {
           dispatch(receiveIniteState(stampedAction.payload));
         }
         return;
-      } else if (allowed(stampedAction.type)) {
+      } else if (allowed(stampedAction.type, stampedAction)) {
         lastUuid = stampedAction.$uuid;
         dispatch(stampedAction);
       }
