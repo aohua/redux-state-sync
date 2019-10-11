@@ -61,9 +61,12 @@ export function createMessageListener({ channel, dispatch, allowed }) {
   const tabs = {};
   const messageChannel = channel;
   messageChannel.onmessage = (stampedAction) => {
-    // ignore if this action is triggered by this window
+    // Ignore if this action is triggered by this window
+    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
+      return;
+    }
     // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID || stampedAction.type === RECEIVE_INIT_STATE) {
+    if (stampedAction.type === RECEIVE_INIT_STATE) {
       return;
     }
     // ignore other values that saved to localstorage.
@@ -79,7 +82,10 @@ export function createMessageListener({ channel, dispatch, allowed }) {
         return;
       } else if (allowed(stampedAction.type)) {
         lastUuid = stampedAction.$uuid;
-        dispatch(stampedAction);
+        dispatch({
+          ...stampedAction,
+          $isSync: true
+        });
       }
     }
   };
