@@ -77,7 +77,7 @@ export function createMessageListener({ channel, dispatch, allowed }) {
           dispatch(receiveIniteState(stampedAction.payload));
         }
         return;
-      } else if (allowed(stampedAction.type, stampedAction)) {
+      } else if (allowed(stampedAction)) {
         lastUuid = stampedAction.$uuid;
         dispatch(stampedAction);
       }
@@ -108,7 +108,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
           }
           return next(action);
         }
-        if (allowed(stampedAction.type) || action.type === GET_INIT_STATE) {
+        if (allowed(stampedAction) || action.type === GET_INIT_STATE) {
           channel.postMessage(stampedAction);
         }
       } catch (e) {
