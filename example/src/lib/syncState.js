@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createStateSyncMiddleware = undefined;
+exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
 exports.generateUuidForAction = generateUuidForAction;
 exports.isActionAllowed = isActionAllowed;
 exports.createMessageListener = createMessageListener;
@@ -25,7 +25,10 @@ var defaultConfig = {
   predicate: null,
   blacklist: [],
   whitelist: [],
-  broadcastChannelOption: null
+  broadcastChannelOption: null,
+  prepareState: function prepareState(state) {
+    return state;
+  }
 };
 
 var getIniteState = function getIniteState() {
@@ -70,12 +73,12 @@ function isActionAllowed(_ref) {
   if (predicate && typeof predicate === 'function') {
     allowed = predicate;
   } else if (Array.isArray(blacklist)) {
-    allowed = function allowed(type) {
-      return blacklist.indexOf(type) < 0;
+    allowed = function allowed(action) {
+      return blacklist.indexOf(action.type) < 0;
     };
   } else if (Array.isArray(whitelist)) {
-    allowed = function allowed(type) {
-      return whitelist.indexOf(type) >= 0;
+    allowed = function allowed(action) {
+      return whitelist.indexOf(action.type) >= 0;
     };
   }
   return allowed;
@@ -106,7 +109,7 @@ function createMessageListener(_ref2) {
           dispatch(receiveIniteState(stampedAction.payload));
         }
         return;
-      } else if (allowed(stampedAction.type)) {
+      } else if (allowed(stampedAction)) {
         lastUuid = stampedAction.$uuid;
         dispatch(stampedAction);
       }
@@ -119,6 +122,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
 
   var allowed = isActionAllowed(config);
   var channel = new _broadcastChannel2.default(config.channel, config.broadcastChannelOption);
+  var prepareState = config.prepareState || defaultConfig.prepareState;
 
   return function (_ref3) {
     var getState = _ref3.getState,
@@ -137,12 +141,12 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
           try {
             if (action.type === SEND_INIT_STATE) {
               if (getState()) {
-                stampedAction.payload = getState();
+                stampedAction.payload = prepareState(getState());
                 channel.postMessage(stampedAction);
               }
               return next(action);
             }
-            if (allowed(stampedAction.type) || action.type === GET_INIT_STATE) {
+            if (allowed(stampedAction) || action.type === GET_INIT_STATE) {
               channel.postMessage(stampedAction);
             }
           } catch (e) {
@@ -155,19 +159,28 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
   };
 };
 
-// init state with other tab's state
-var withReduxStateSync = exports.withReduxStateSync = function withReduxStateSync(appReducer) {
-  return function (state, action) {
-    var initState = state;
-    if (action.type === RECEIVE_INIT_STATE) {
-      initState = action.payload;
-    }
-    return appReducer(initState, action);
+var createReduxStateSync = exports.createReduxStateSync = function createReduxStateSync(_ref4) {
+  var prepareState = _ref4.prepareState;
+  return function (appReducer) {
+    return function (state, action) {
+      var initState = state;
+      if (action.type === RECEIVE_INIT_STATE) {
+        initState = prepareState(action.payload);
+      }
+      return appReducer(initState, action);
+    };
   };
 };
 
-var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWithPrevTab(_ref4) {
-  var dispatch = _ref4.dispatch;
+// init state with other tab's state
+var withReduxStateSync = exports.withReduxStateSync = createReduxStateSync({
+  prepareState: function prepareState(state) {
+    return state;
+  }
+});
+
+var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWithPrevTab(_ref5) {
+  var dispatch = _ref5.dispatch;
 
   dispatch(getIniteState());
 };

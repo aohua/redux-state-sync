@@ -49,9 +49,9 @@ export function isActionAllowed({ predicate, blacklist, whitelist }) {
   if (predicate && typeof predicate === 'function') {
     allowed = predicate;
   } else if (Array.isArray(blacklist)) {
-    allowed = type => blacklist.indexOf(type) < 0;
+    allowed = action => blacklist.indexOf(action.type) < 0;
   } else if (Array.isArray(whitelist)) {
-    allowed = type => whitelist.indexOf(type) >= 0;
+    allowed = action => whitelist.indexOf(action.type) >= 0;
   }
   return allowed;
 }
