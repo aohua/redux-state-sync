@@ -1,11 +1,12 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+  value: true,
 });
 exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
 exports.generateUuidForAction = generateUuidForAction;
 exports.isActionAllowed = isActionAllowed;
+exports.isActionSynced = isActionSynced;
 exports.createMessageListener = createMessageListener;
 
 var _broadcastChannel = require("broadcast-channel");
@@ -30,7 +31,7 @@ var defaultConfig = {
   broadcastChannelOption: null,
   prepareState: function prepareState(state) {
     return state;
-  }
+  },
 };
 
 var getIniteState = function getIniteState() {
@@ -102,6 +103,10 @@ function isActionAllowed(_ref) {
   return allowed;
 }
 // export for test
+function isActionSynced(action) {
+  return !!action.$isSync;
+}
+// export for test
 function createMessageListener(_ref2) {
   var channel = _ref2.channel,
     dispatch = _ref2.dispatch,
@@ -111,12 +116,12 @@ function createMessageListener(_ref2) {
   var tabs = {};
   var messageChannel = channel;
   messageChannel.onmessage = function(stampedAction) {
-    // ignore if this action is triggered by this window
+    // Ignore if this action is triggered by this window
+    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
+      return;
+    }
     // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-    if (
-      stampedAction.$wuid === WINDOW_STATE_SYNC_ID ||
-      stampedAction.type === RECEIVE_INIT_STATE
-    ) {
+    if (stampedAction.type === RECEIVE_INIT_STATE) {
       return;
     }
     // ignore other values that saved to localstorage.
@@ -135,7 +140,11 @@ function createMessageListener(_ref2) {
         return;
       } else if (allowed(stampedAction.type)) {
         lastUuid = stampedAction.$uuid;
-        dispatch(stampedAction);
+        dispatch(
+          Object.assign(stampedAction, {
+            $isSync: true,
+          }),
+        );
       }
     }
   };
@@ -150,7 +159,7 @@ var createStateSyncMiddleware = (exports.createStateSyncMiddleware = function cr
   var allowed = isActionAllowed(config);
   var channel = new _broadcastChannel2.default(
     config.channel,
-    config.broadcastChannelOption
+    config.broadcastChannelOption,
   );
   var prepareState = config.prepareState || defaultConfig.prepareState;
 
@@ -165,7 +174,7 @@ var createStateSyncMiddleware = (exports.createStateSyncMiddleware = function cr
           createMessageListener({
             channel: channel,
             dispatch: dispatch,
-            allowed: allowed
+            allowed: allowed,
           });
         }
         // post messages
@@ -185,18 +194,23 @@ var createStateSyncMiddleware = (exports.createStateSyncMiddleware = function cr
             }
           } catch (e) {
             console.error(
-              "Your browser doesn't support cross tab communication"
+              "Your browser doesn't support cross tab communication",
             );
           }
         }
-        return next(action);
+        return next(
+          Object.assign(action, {
+            $isSync:
+              typeof action.$isSync === "undefined" ? false : action.$isSync,
+          }),
+        );
       };
     };
   };
 });
 
 var createReduxStateSync = (exports.createReduxStateSync = function createReduxStateSync(
-  _ref4
+  _ref4,
 ) {
   var prepareState = _ref4.prepareState;
   return function(appReducer) {
@@ -214,11 +228,11 @@ var createReduxStateSync = (exports.createReduxStateSync = function createReduxS
 var withReduxStateSync = (exports.withReduxStateSync = createReduxStateSync({
   prepareState: function prepareState(state) {
     return state;
-  }
+  },
 }));
 
 var initStateWithPrevTab = (exports.initStateWithPrevTab = function initStateWithPrevTab(
-  _ref5
+  _ref5,
 ) {
   var dispatch = _ref5.dispatch;
 
