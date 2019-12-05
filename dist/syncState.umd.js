@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -81,11 +81,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = isPromise;
-/* harmony export (immutable) */ __webpack_exports__["c"] = sleep;
-/* harmony export (immutable) */ __webpack_exports__["e"] = randomInt;
-/* harmony export (immutable) */ __webpack_exports__["d"] = randomToken;
-/* harmony export (immutable) */ __webpack_exports__["b"] = microSeconds;
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony export (immutable) */ __webpack_exports__["a"] = isPromise;
+/* harmony export (immutable) */ __webpack_exports__["d"] = sleep;
+/* harmony export (immutable) */ __webpack_exports__["f"] = randomInt;
+/* harmony export (immutable) */ __webpack_exports__["e"] = randomToken;
+/* harmony export (immutable) */ __webpack_exports__["c"] = microSeconds;
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return isNode; });
 /**
  * returns true if the given object is a promise
  */
@@ -142,17 +143,17 @@ function microSeconds() {
     return ms * 1000;
   }
 }
+/**
+ * copied from the 'detect-node' npm module
+ * We cannot use the module directly because it causes problems with rollup
+ * @link https://github.com/iliakan/detect-node/blob/master/index.js
+ */
+
+var isNode = Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(10)))
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
-
-module.exports = false;
-
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -179,53 +180,53 @@ function fillOptionsWithDefaults(options) {
 }
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export _removeTooOldValues */
 /**
- *
- *
+ * this is a set which automatically forgets
+ * a given entry when a new entry is set and the ttl
+ * of the old one is over
+ * @constructor
  */
 var ObliviousSet = function ObliviousSet(ttl) {
-  this.ttl = ttl;
-  this.set = new Set();
-  this.timeMap = new Map();
-  this.has = this.set.has.bind(this.set);
-};
+  var set = new Set();
+  var timeMap = new Map();
+  this.has = set.has.bind(set);
 
-ObliviousSet.prototype = {
-  add: function add(value) {
-    this.timeMap.set(value, now());
-    this.set.add(value);
+  this.add = function (value) {
+    timeMap.set(value, now());
+    set.add(value);
 
-    _removeTooOldValues(this);
-  },
-  clear: function clear() {
-    this.set.clear();
-    this.timeMap.clear();
-  }
-};
-function _removeTooOldValues(obliviousSet) {
-  var olderThen = now() - obliviousSet.ttl;
-  var iterator = obliviousSet.set[Symbol.iterator]();
+    _removeTooOldValues();
+  };
 
-  while (true) {
-    var value = iterator.next().value;
-    if (!value) return; // no more elements
+  this.clear = function () {
+    set.clear();
+    timeMap.clear();
+  };
 
-    var time = obliviousSet.timeMap.get(value);
+  function _removeTooOldValues() {
+    var olderThen = now() - ttl;
+    var iterator = set[Symbol.iterator]();
 
-    if (time < olderThen) {
-      obliviousSet.timeMap["delete"](value);
-      obliviousSet.set["delete"](value);
-    } else {
-      // we reached a value that is not old enough
-      return;
+    while (true) {
+      var value = iterator.next().value;
+      if (!value) return; // no more elements
+
+      var time = timeMap.get(value);
+
+      if (time < olderThen) {
+        timeMap["delete"](value);
+        set["delete"](value);
+      } else {
+        // we reached a value that is not old enough
+        return;
+      }
     }
   }
-}
+};
 
 function now() {
   return new Date().getTime();
@@ -234,20 +235,25 @@ function now() {
 /* harmony default export */ __webpack_exports__["a"] = (ObliviousSet);
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__method_chooser_js__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__options_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__method_chooser_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__options_js__ = __webpack_require__(1);
 
 
 
 
 var BroadcastChannel = function BroadcastChannel(name, options) {
   this.name = name;
+
+  if (ENFORCED_OPTIONS) {
+    options = ENFORCED_OPTIONS;
+  }
+
   this.options = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__options_js__["a" /* fillOptionsWithDefaults */])(options);
   this.method = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__method_chooser_js__["a" /* chooseMethod */])(this.options); // isListening
 
@@ -307,6 +313,17 @@ BroadcastChannel.clearNodeFolder = function (options) {
   } else {
     return Promise.resolve(false);
   }
+};
+/**
+ * if set, this method is enforced,
+ * no mather what the options are
+ */
+
+
+var ENFORCED_OPTIONS;
+
+BroadcastChannel.enforceOptions = function (options) {
+  ENFORCED_OPTIONS = options;
 }; // PROTOTYPE
 
 
@@ -467,7 +484,7 @@ function _stopListening(channel) {
 /* harmony default export */ __webpack_exports__["default"] = (BroadcastChannel);
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -479,9 +496,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
 exports.generateUuidForAction = generateUuidForAction;
 exports.isActionAllowed = isActionAllowed;
+exports.isActionSynced = isActionSynced;
 exports.createMessageListener = createMessageListener;
 
-var _broadcastChannel = __webpack_require__(4);
+var _broadcastChannel = __webpack_require__(3);
 
 var _broadcastChannel2 = _interopRequireDefault(_broadcastChannel);
 
@@ -557,6 +575,10 @@ function isActionAllowed(_ref) {
   return allowed;
 }
 // export for test
+function isActionSynced(action) {
+  return !!action.$isSync;
+}
+// export for test
 function createMessageListener(_ref2) {
   var channel = _ref2.channel,
       dispatch = _ref2.dispatch,
@@ -566,9 +588,12 @@ function createMessageListener(_ref2) {
   var tabs = {};
   var messageChannel = channel;
   messageChannel.onmessage = function (stampedAction) {
-    // ignore if this action is triggered by this window
+    // Ignore if this action is triggered by this window
+    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
+      return;
+    }
     // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID || stampedAction.type === RECEIVE_INIT_STATE) {
+    if (stampedAction.type === RECEIVE_INIT_STATE) {
       return;
     }
     // ignore other values that saved to localstorage.
@@ -584,7 +609,9 @@ function createMessageListener(_ref2) {
         return;
       } else if (allowed(stampedAction)) {
         lastUuid = stampedAction.$uuid;
-        dispatch(stampedAction);
+        dispatch(Object.assign(stampedAction, {
+          $isSync: true
+        }));
       }
     }
   };
@@ -626,7 +653,9 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
             console.error("Your browser doesn't support cross tab communication");
           }
         }
-        return next(action);
+        return next(Object.assign(action, {
+          $isSync: typeof action.$isSync === 'undefined' ? false : action.$isSync
+        }));
       };
     };
   };
@@ -659,39 +688,40 @@ var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWith
 };
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["a"] = chooseMethod;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_detect_node__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__methods_native_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__methods_indexed_db_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__methods_localstorage_js__ = __webpack_require__(8);
-var require;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__methods_native_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__methods_indexed_db_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__methods_localstorage_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__methods_simulate_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__util__ = __webpack_require__(0);
+
+
 
 
  // order is important
 
-var METHODS = [__WEBPACK_IMPORTED_MODULE_1__methods_native_js__["a" /* default */], // fastest
-__WEBPACK_IMPORTED_MODULE_2__methods_indexed_db_js__["a" /* default */], __WEBPACK_IMPORTED_MODULE_3__methods_localstorage_js__["a" /* default */]];
-var REQUIRE_FUN = require;
+var METHODS = [__WEBPACK_IMPORTED_MODULE_0__methods_native_js__["a" /* default */], // fastest
+__WEBPACK_IMPORTED_MODULE_1__methods_indexed_db_js__["a" /* default */], __WEBPACK_IMPORTED_MODULE_2__methods_localstorage_js__["a" /* default */]];
 /**
  * The NodeMethod is loaded lazy
  * so it will not get bundled in browser-builds
  */
 
-if (__WEBPACK_IMPORTED_MODULE_0_detect_node___default.a) {
+if (__WEBPACK_IMPORTED_MODULE_4__util__["b" /* isNode */]) {
   /**
    * we use the non-transpiled code for nodejs
    * because it runs faster
    */
-  var NodeMethod = __webpack_require__(10);
+  var NodeMethod = __webpack_require__(11);
   /**
    * this will be false for webpackbuilds
    * which will shim the node-method with an empty object {}
    */
+
 
   if (typeof NodeMethod.canBeUsed === 'function') {
     METHODS.push(NodeMethod);
@@ -701,16 +731,25 @@ if (__WEBPACK_IMPORTED_MODULE_0_detect_node___default.a) {
 function chooseMethod(options) {
   // directly chosen
   if (options.type) {
+    if (options.type === 'simulate') {
+      // only use simulate-method if directly chosen
+      return __WEBPACK_IMPORTED_MODULE_3__methods_simulate_js__["a" /* default */];
+    }
+
     var ret = METHODS.find(function (m) {
       return m.type === options.type;
     });
     if (!ret) throw new Error('method-type ' + options.type + ' not found');else return ret;
   }
+  /**
+   * if no webworker support is needed,
+   * remove idb from the list so that localstorage is been chosen
+   */
+
 
   var chooseMethods = METHODS;
 
-  if (!options.webWorkerSupport && !__WEBPACK_IMPORTED_MODULE_0_detect_node___default.a) {
-    // prefer localstorage over idb when no webworker-support needed
+  if (!options.webWorkerSupport && !__WEBPACK_IMPORTED_MODULE_4__util__["b" /* isNode */]) {
     chooseMethods = METHODS.filter(function (m) {
       return m.type !== 'idb';
     });
@@ -725,7 +764,7 @@ function chooseMethod(options) {
 }
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -745,19 +784,16 @@ function chooseMethod(options) {
 /* unused harmony export onMessage */
 /* unused harmony export canBeUsed */
 /* unused harmony export averageResponseTime */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_detect_node__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__oblivious_set__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__options__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__oblivious_set__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__options__ = __webpack_require__(1);
 /**
  * this method uses indexeddb to store the messages
  * There is currently no observerAPI for idb
  * @link https://github.com/w3c/IndexedDB/issues/51
  */
 
-
-var microSeconds = __WEBPACK_IMPORTED_MODULE_1__util_js__["b" /* microSeconds */];
+var microSeconds = __WEBPACK_IMPORTED_MODULE_0__util_js__["c" /* microSeconds */];
 
 
 var DB_PREFIX = 'pubkey.broadcast-channel-0-';
@@ -847,8 +883,7 @@ function getMessagesHigherThen(db, lastCursorId) {
       var cursor = ev.target.result;
 
       if (cursor) {
-        ret.push(cursor.value); //alert("Name for SSN " + cursor.key + " is " + cursor.value.name);
-
+        ret.push(cursor.value);
         cursor["continue"]();
       } else {
         res(ret);
@@ -898,21 +933,21 @@ function cleanOldMessages(db, ttl) {
   });
 }
 function create(channelName, options) {
-  options = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__options__["a" /* fillOptionsWithDefaults */])(options);
+  options = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__options__["a" /* fillOptionsWithDefaults */])(options);
   return createDatabase(channelName).then(function (db) {
     var state = {
       closed: false,
       lastCursorId: 0,
       channelName: channelName,
       options: options,
-      uuid: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util_js__["d" /* randomToken */])(10),
+      uuid: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__util_js__["e" /* randomToken */])(10),
 
       /**
        * emittedMessagesIds
        * contains all messages that have been emitted before
        * @type {ObliviousSet}
        */
-      eMIs: new __WEBPACK_IMPORTED_MODULE_2__oblivious_set__["a" /* default */](options.idb.ttl * 2),
+      eMIs: new __WEBPACK_IMPORTED_MODULE_1__oblivious_set__["a" /* default */](options.idb.ttl * 2),
       // ensures we do not read messages in parrallel
       writeBlockPromise: Promise.resolve(),
       messagesCallback: null,
@@ -934,7 +969,7 @@ function create(channelName, options) {
 function _readLoop(state) {
   if (state.closed) return;
   return readNewMessages(state).then(function () {
-    return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util_js__["c" /* sleep */])(state.options.idb.fallbackInterval);
+    return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__util_js__["d" /* sleep */])(state.options.idb.fallbackInterval);
   }).then(function () {
     return _readLoop(state);
   });
@@ -960,7 +995,15 @@ function readNewMessages(state) {
 
   if (!state.messagesCallback) return Promise.resolve();
   return getMessagesHigherThen(state.db, state.lastCursorId).then(function (newerMessages) {
-    var useMessages = newerMessages.map(function (msgObj) {
+    var useMessages = newerMessages
+    /**
+     * there is a bug in iOS where the msgObj can be undefined some times
+     * so we filter them out
+     * @link https://github.com/pubkey/broadcast-channel/issues/19
+     */
+    .filter(function (msgObj) {
+      return !!msgObj;
+    }).map(function (msgObj) {
       if (msgObj.id > state.lastCursorId) {
         state.lastCursorId = msgObj.id;
       }
@@ -990,7 +1033,7 @@ function postMessage(channelState, messageJson) {
   channelState.writeBlockPromise = channelState.writeBlockPromise.then(function () {
     return writeMessage(channelState.db, channelState.uuid, messageJson);
   }).then(function () {
-    if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util_js__["e" /* randomInt */])(0, 10) === 0) {
+    if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__util_js__["f" /* randomInt */])(0, 10) === 0) {
       /* await (do not await) */
       cleanOldMessages(channelState.db, channelState.options.idb.ttl);
     }
@@ -1003,7 +1046,7 @@ function onMessage(channelState, fn, time) {
   readNewMessages(channelState);
 }
 function canBeUsed() {
-  if (__WEBPACK_IMPORTED_MODULE_0_detect_node___default.a) return false;
+  if (__WEBPACK_IMPORTED_MODULE_0__util_js__["b" /* isNode */]) return false;
   var idb = getIdb();
   if (!idb) return false;
   return true;
@@ -1023,7 +1066,7 @@ function averageResponseTime(options) {
 });
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1039,11 +1082,9 @@ function averageResponseTime(options) {
 /* unused harmony export onMessage */
 /* unused harmony export canBeUsed */
 /* unused harmony export averageResponseTime */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_detect_node__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__oblivious_set__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__options__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__oblivious_set__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__options__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util__ = __webpack_require__(0);
 /**
  * A localStorage-only method which uses localstorage and its 'storage'-event
  * This does not work inside of webworkers because they have no access to locastorage
@@ -1054,8 +1095,7 @@ function averageResponseTime(options) {
 
 
 
-
-var microSeconds = __WEBPACK_IMPORTED_MODULE_3__util__["b" /* microSeconds */];
+var microSeconds = __WEBPACK_IMPORTED_MODULE_2__util__["c" /* microSeconds */];
 var KEY_PREFIX = 'pubkey.broadcastChannel-';
 var type = 'localstorage';
 /**
@@ -1087,16 +1127,16 @@ function storageKey(channelName) {
 
 function postMessage(channelState, messageJson) {
   return new Promise(function (res) {
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__util__["c" /* sleep */])().then(function () {
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__util__["d" /* sleep */])().then(function () {
       var key = storageKey(channelState.channelName);
       var writeObj = {
-        token: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__util__["d" /* randomToken */])(10),
+        token: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__util__["e" /* randomToken */])(10),
         time: new Date().getTime(),
         data: messageJson,
         uuid: channelState.uuid
       };
       var value = JSON.stringify(writeObj);
-      localStorage.setItem(key, value);
+      getLocalStorage().setItem(key, value);
       /**
        * StorageEvent does not fire the 'storage' event
        * in the window that changes the state of the local storage.
@@ -1128,20 +1168,20 @@ function removeStorageEventListener(listener) {
   window.removeEventListener('storage', listener);
 }
 function create(channelName, options) {
-  options = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__options__["a" /* fillOptionsWithDefaults */])(options);
+  options = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__options__["a" /* fillOptionsWithDefaults */])(options);
 
   if (!canBeUsed()) {
     throw new Error('BroadcastChannel: localstorage cannot be used');
   }
 
-  var uuid = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__util__["d" /* randomToken */])(10);
+  var uuid = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__util__["e" /* randomToken */])(10);
   /**
    * eMIs
    * contains all messages that have been emitted before
    * @type {ObliviousSet}
    */
 
-  var eMIs = new __WEBPACK_IMPORTED_MODULE_1__oblivious_set__["a" /* default */](options.localstorage.removeTimeout);
+  var eMIs = new __WEBPACK_IMPORTED_MODULE_0__oblivious_set__["a" /* default */](options.localstorage.removeTimeout);
   var state = {
     channelName: channelName,
     uuid: uuid,
@@ -1170,13 +1210,97 @@ function onMessage(channelState, fn, time) {
   channelState.messagesCallback = fn;
 }
 function canBeUsed() {
-  if (__WEBPACK_IMPORTED_MODULE_0_detect_node___default.a) return false;
+  if (__WEBPACK_IMPORTED_MODULE_2__util__["b" /* isNode */]) return false;
   var ls = getLocalStorage();
   if (!ls) return false;
+
+  try {
+    var key = '__broadcastchannel_check';
+    ls.setItem(key, 'works');
+    ls.removeItem(key);
+  } catch (e) {
+    // Safari 10 in private mode will not allow write access to local
+    // storage and fail with a QuotaExceededError. See
+    // https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API#Private_Browsing_Incognito_modes
+    return false;
+  }
+
   return true;
 }
 function averageResponseTime() {
   return 120;
+}
+/* harmony default export */ __webpack_exports__["a"] = ({
+  create: create,
+  close: close,
+  onMessage: onMessage,
+  postMessage: postMessage,
+  canBeUsed: canBeUsed,
+  type: type,
+  averageResponseTime: averageResponseTime,
+  microSeconds: microSeconds
+});
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export microSeconds */
+/* unused harmony export type */
+/* unused harmony export create */
+/* unused harmony export close */
+/* unused harmony export postMessage */
+/* unused harmony export onMessage */
+/* unused harmony export canBeUsed */
+/* unused harmony export averageResponseTime */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util__ = __webpack_require__(0);
+
+var microSeconds = __WEBPACK_IMPORTED_MODULE_0__util__["c" /* microSeconds */];
+var type = 'native';
+function create(channelName) {
+  var state = {
+    messagesCallback: null,
+    bc: new BroadcastChannel(channelName),
+    subFns: [] // subscriberFunctions
+
+  };
+
+  state.bc.onmessage = function (msg) {
+    if (state.messagesCallback) {
+      state.messagesCallback(msg.data);
+    }
+  };
+
+  return state;
+}
+function close(channelState) {
+  channelState.bc.close();
+  channelState.subFns = [];
+}
+function postMessage(channelState, messageJson) {
+  channelState.bc.postMessage(messageJson, false);
+}
+function onMessage(channelState, fn) {
+  channelState.messagesCallback = fn;
+}
+function canBeUsed() {
+  /**
+   * in the electron-renderer, isNode will be true even if we are in browser-context
+   * so we also check if window is undefined
+   */
+  if (__WEBPACK_IMPORTED_MODULE_0__util__["b" /* isNode */] && typeof window === 'undefined') return false;
+
+  if (typeof BroadcastChannel === 'function') {
+    if (BroadcastChannel._pubkey) {
+      throw new Error('BroadcastChannel: Do not overwrite window.BroadcastChannel with this module, this is not a polyfill');
+    }
+
+    return true;
+  } else return false;
+}
+function averageResponseTime() {
+  return 150;
 }
 /* harmony default export */ __webpack_exports__["a"] = ({
   create: create,
@@ -1202,57 +1326,47 @@ function averageResponseTime() {
 /* unused harmony export onMessage */
 /* unused harmony export canBeUsed */
 /* unused harmony export averageResponseTime */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_detect_node___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_detect_node__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util__ = __webpack_require__(0);
 
-
-var microSeconds = __WEBPACK_IMPORTED_MODULE_1__util__["b" /* microSeconds */];
-var type = 'native';
+var microSeconds = __WEBPACK_IMPORTED_MODULE_0__util__["c" /* microSeconds */];
+var type = 'simulate';
+var SIMULATE_CHANNELS = new Set();
 function create(channelName) {
   var state = {
-    messagesCallback: null,
-    bc: new BroadcastChannel(channelName),
-    subFns: [] // subscriberFunctions
-
+    name: channelName,
+    messagesCallback: null
   };
-
-  state.bc.onmessage = function (msg) {
-    if (state.messagesCallback) {
-      state.messagesCallback(msg.data);
-    }
-  };
-
+  SIMULATE_CHANNELS.add(state);
   return state;
 }
 function close(channelState) {
-  channelState.bc.close();
-  channelState.subFns = [];
+  SIMULATE_CHANNELS["delete"](channelState);
 }
 function postMessage(channelState, messageJson) {
-  channelState.bc.postMessage(messageJson, false);
+  return new Promise(function (res) {
+    return setTimeout(function () {
+      var channelArray = Array.from(SIMULATE_CHANNELS);
+      channelArray.filter(function (channel) {
+        return channel.name === channelState.name;
+      }).filter(function (channel) {
+        return channel !== channelState;
+      }).filter(function (channel) {
+        return !!channel.messagesCallback;
+      }).forEach(function (channel) {
+        return channel.messagesCallback(messageJson);
+      });
+      res();
+    }, 5);
+  });
 }
-function onMessage(channelState, fn, time) {
-  channelState.messagesCallbackTime = time;
+function onMessage(channelState, fn) {
   channelState.messagesCallback = fn;
 }
 function canBeUsed() {
-  /**
-   * in the electron-renderer, isNode will be true even if we are in browser-context
-   * so we also check if window is undefined
-   */
-  if (__WEBPACK_IMPORTED_MODULE_0_detect_node___default.a && typeof window === 'undefined') return false;
-
-  if (typeof BroadcastChannel === 'function') {
-    if (BroadcastChannel._pubkey) {
-      throw new Error('BroadcastChannel: Do not overwrite window.BroadcastChannel with this module, this is not a polyfill');
-    }
-
-    return true;
-  } else return false;
+  return true;
 }
 function averageResponseTime() {
-  return 100;
+  return 5;
 }
 /* harmony default export */ __webpack_exports__["a"] = ({
   create: create,
@@ -1267,6 +1381,196 @@ function averageResponseTime() {
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
