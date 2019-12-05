@@ -496,6 +496,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
 exports.generateUuidForAction = generateUuidForAction;
 exports.isActionAllowed = isActionAllowed;
+exports.isActionSynced = isActionSynced;
 exports.createMessageListener = createMessageListener;
 
 var _broadcastChannel = __webpack_require__(3);
@@ -574,6 +575,10 @@ function isActionAllowed(_ref) {
   return allowed;
 }
 // export for test
+function isActionSynced(action) {
+  return !!action.$isSync;
+}
+// export for test
 function createMessageListener(_ref2) {
   var channel = _ref2.channel,
       dispatch = _ref2.dispatch,
@@ -583,9 +588,12 @@ function createMessageListener(_ref2) {
   var tabs = {};
   var messageChannel = channel;
   messageChannel.onmessage = function (stampedAction) {
-    // ignore if this action is triggered by this window
+    // Ignore if this action is triggered by this window
+    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
+      return;
+    }
     // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-    if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID || stampedAction.type === RECEIVE_INIT_STATE) {
+    if (stampedAction.type === RECEIVE_INIT_STATE) {
       return;
     }
     // ignore other values that saved to localstorage.
@@ -601,7 +609,9 @@ function createMessageListener(_ref2) {
         return;
       } else if (allowed(stampedAction.type)) {
         lastUuid = stampedAction.$uuid;
-        dispatch(stampedAction);
+        dispatch(Object.assign(stampedAction, {
+          $isSync: true
+        }));
       }
     }
   };
@@ -643,7 +653,9 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
             console.error("Your browser doesn't support cross tab communication");
           }
         }
-        return next(action);
+        return next(Object.assign(action, {
+          $isSync: typeof action.$isSync === 'undefined' ? false : action.$isSync
+        }));
       };
     };
   };
