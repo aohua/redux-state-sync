@@ -49,9 +49,9 @@ export function isActionAllowed({ predicate, blacklist, whitelist }) {
   if (predicate && typeof predicate === 'function') {
     allowed = predicate;
   } else if (Array.isArray(blacklist)) {
-    allowed = type => blacklist.indexOf(type) < 0;
+    allowed = action => blacklist.indexOf(action.type) < 0;
   } else if (Array.isArray(whitelist)) {
-    allowed = type => whitelist.indexOf(type) >= 0;
+    allowed = action => whitelist.indexOf(action.type) >= 0;
   }
   return allowed;
 }
@@ -84,7 +84,7 @@ export function createMessageListener({ channel, dispatch, allowed }) {
           dispatch(receiveIniteState(stampedAction.payload));
         }
         return;
-      } else if (allowed(stampedAction.type)) {
+      } else if (allowed(stampedAction)) {
         lastUuid = stampedAction.$uuid;
         dispatch(Object.assign(stampedAction, {
           $isSync: true,
@@ -117,7 +117,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
           }
           return next(action);
         }
-        if (allowed(stampedAction.type) || action.type === GET_INIT_STATE) {
+        if (allowed(stampedAction) || action.type === GET_INIT_STATE) {
           channel.postMessage(stampedAction);
         }
       } catch (e) {

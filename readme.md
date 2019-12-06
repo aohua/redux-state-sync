@@ -112,6 +112,7 @@ const middlewares = [
 ```
 #### predicate
 A function to let you filter the actions as you wanted.
+##### Note: Since version 3.0 the function receives the action itself and not only the action type.
 
 type: `Function`
 
@@ -120,7 +121,7 @@ default: null
 ```javascript
 const config = {
   // All actions will be triggered in other tabs except 'TOGGLE_TODO'
-  predicate: actionType => actionType !== 'TOGGLE_TODO'
+  predicate: action => action.type !== 'TOGGLE_TODO'
 }
 const middlewares = [
   createStateSyncMiddleware(config),

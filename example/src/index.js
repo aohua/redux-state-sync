@@ -14,7 +14,7 @@ const middlewares = [
   // TOGGLE_TODO will not be triggered
   createStateSyncMiddleware({
     initiateWithState: true,
-    predicate: actionType => actionType !== "TOGGLE_TODO",
+    predicate: action => action.type !== "TOGGLE_TODO",
   }),
 ];
 const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));

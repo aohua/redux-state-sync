@@ -25,7 +25,7 @@ describe('is action allowed', () => {
     const whitelist = [];
     const allowed = isActionAllowed({ predicate, blacklist, whitelist });
     const action = { type: 'Test', payload: 'Test' };
-    expect(allowed(action.type)).toBeFalsy();
+    expect(allowed(action)).toBeFalsy();
   });
   it('action in blacklist and whitelist should not be triggered', () => {
     const predicate = null;
@@ -33,15 +33,17 @@ describe('is action allowed', () => {
     const whitelist = ['Test'];
     const allowed = isActionAllowed({ predicate, blacklist, whitelist });
     const action = { type: 'Test', payload: 'Test' };
-    expect(allowed(action.type)).toBeFalsy();
+    expect(allowed(action)).toBeFalsy();
   });
   it('action in blacklist and predicate should be triggered', () => {
-    const predicate = type => type === 'Test';
+    const predicate = (action) => action.type === 'Test' || action.payload === 'Test';
     const blacklist = ['Test'];
     const whitelist = ['Test'];
     const allowed = isActionAllowed({ predicate, blacklist, whitelist });
     const action = { type: 'Test', payload: 'Test' };
-    expect(allowed(action.type)).toBeTruthy();
+    expect(allowed(action)).toBeTruthy();
+    const action2 = { type: 'SecondTest', payload: 'Test' };
+    expect(allowed(action2)).toBeTruthy();
   });
 });
 
