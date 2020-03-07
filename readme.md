@@ -65,7 +65,7 @@ const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
 initMessageListener(store);
 ```
 
-#####initMessageListener is a new function to fix the bug that if the other tab not triggering any action on first load, it cannot receive any messages.
+##### initMessageListener is a new function to fix the bug that if the other tab not triggering any action on first load, it cannot receive any messages.
 
 Init new tabs with existing state:
 
@@ -189,7 +189,7 @@ const config = {
 const middlewares = [createStateSyncMiddleware(config)];
 ```
 
-###Working with immutable.js
+### Working with immutable.js
 
 Please check the example_immutable folder.
 
