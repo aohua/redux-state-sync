@@ -132,7 +132,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
 };
 
 // eslint-disable-next-line max-len
-export const createReduxStateSync = (appReducer, prepareState = defaultConfig.predicate) => (state, action) => {
+export const createReduxStateSync = (appReducer, prepareState = defaultConfig.prepareState) => (state, action) => {
     let initState = state;
     if (action.type === RECEIVE_INIT_STATE) {
         initState = prepareState(action.payload);
