@@ -11,11 +11,11 @@ A lightweight middleware to sync your redux state across browser tabs. It will l
 [<img src="https://img.shields.io/travis/AOHUA/redux-state-sync.svg">](https://travis-ci.org/AOHUA/redux-state-sync)
 [<img src="https://img.shields.io/npm/dm/redux-state-sync.svg">](https://www.npmjs.com/package/redux-state-sync)
 
-### Why Redux-State-Sync 3.0?
 
-In redux state sync 1.0, communicate between tabs are fully rely on local storage which means the actions send to other tabs are actually saved in the local storage. We also need to use JSON.stringify and JSON.parse while we saving or retrieving it and all localStorage calls are synchronous. All of this could cause performance problems.
+### Why Redux-State-Sync?
+It syncs your redux store across tabs with very minimal configuration.
 
-Thanks to [BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API), we now have a more efficient way to communicate between tabs instead of using any type of local storage. However, Not all the browsers support BroadcastChannel API for now. So I used pubkey's [BroadcastChannel](https://github.com/pubkey/broadcast-channel) to find the best way to communicate between tabs for redux-state-sync 3.0. [BroadcastChannel](https://github.com/pubkey/broadcast-channel) will make sure that the communication between tabs always works.
+Thanks to [BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API), we now have a more efficient way to communicate between tabs instead of using any type of local storage. However, Not all the browsers support BroadcastChannel API for now. So I used pubkey's [BroadcastChannel](https://github.com/pubkey/broadcast-channel) to find the best way to communicate between tabs for redux-state-sync. [BroadcastChannel](https://github.com/pubkey/broadcast-channel) will make sure that the communication between tabs always works.
 
 ### How to install
 
@@ -46,6 +46,12 @@ yarn add --dev @types/redux-state-sync
 ```
 
 Types are defined [here](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/e6e55443f88128b6393105407c8e8239cb10509b/types/redux-state-sync/index.d.ts)
+
+### Before you use
+
+Please take note that BroadcastChannel only can send data that is supported by the [structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) (Strings, Objects, Arrays, Blobs, ArrayBuffer, Map), so you need to make sure that the actions that you wanna send to other tabs doesn't include any functions in the payload.
+
+If you are using redux-persist, you may need to blacklist some of the actions that is triggered by redux-persist. e.g. persist/PERSIST, persist/REHYDRATE, etc.
 
 ### How to use
 
