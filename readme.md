@@ -11,11 +11,13 @@ A lightweight middleware to sync your redux state across browser tabs. It will l
 [<img src="https://img.shields.io/travis/AOHUA/redux-state-sync.svg">](https://travis-ci.org/AOHUA/redux-state-sync)
 [<img src="https://img.shields.io/npm/dm/redux-state-sync.svg">](https://www.npmjs.com/package/redux-state-sync)
 
-
 ### Why Redux-State-Sync?
+
+![](redux-state-sync.gif)
+
 It syncs your redux store across tabs with very minimal configuration.
 
-Thanks to [BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API), we now have a more efficient way to communicate between tabs instead of using any type of local storage. However, Not all the browsers support BroadcastChannel API for now. So I used pubkey's [BroadcastChannel](https://github.com/pubkey/broadcast-channel) to find the best way to communicate between tabs for redux-state-sync. [BroadcastChannel](https://github.com/pubkey/broadcast-channel) will make sure that the communication between tabs always works.
+Thanks to [BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API), we now have a more efficient way to communicate between tabs instead of using any type of local storage. However, Not all the browsers support BroadcastChannel API for now. So I used [pubkey's BroadcastChannel](https://github.com/pubkey/broadcast-channel) to find the best way to communicate between tabs for redux-state-sync. [pubkey's BroadcastChannel](https://github.com/pubkey/broadcast-channel) will make sure that the communication between tabs always works.
 
 ### How to install
 
