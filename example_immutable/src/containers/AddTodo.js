@@ -34,10 +34,12 @@ class AddTodo extends Component {
 }
 
 const mapStateToProps = state => ({
-    todo: state.todo,
+    todo: state.get('todo'),
 });
+
 const mapDispatchToProps = dispatch => ({
     addTodo: todo => dispatch(addTodo(todo)),
     todoOnChange: todo => dispatch(todoOnChange(todo)),
 });
+
 export default connect(mapStateToProps, mapDispatchToProps)(AddTodo);

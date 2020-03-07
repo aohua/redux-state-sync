@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# Redux-State-Sync 3.0
+# Redux-State-Sync 3.1
 
 A lightweight middleware to sync your redux state across browser tabs. It will listen to the Broadcast Channel and dispatch exactly the same actions dispatched in other tabs to keep the redux state in sync.
 
@@ -52,45 +52,49 @@ Types are defined [here](https://github.com/DefinitelyTyped/DefinitelyTyped/blob
 Create the state sync middleware with config:
 
 ```javascript
-import { createStore, applyMiddleware } from "redux";
-import { createStateSyncMiddleware } from "redux-state-sync";
+import { createStore, applyMiddleware } from 'redux';
+import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
 
 const config = {
-  // TOGGLE_TODO will not be triggered in other tabs
-  blacklist: ["TOGGLE_TODO"],
+    // TOGGLE_TODO will not be triggered in other tabs
+    blacklist: ['TOGGLE_TODO'],
 };
 const middlewares = [createStateSyncMiddleware(config)];
 const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
+// this is used to pass store.dsipatch to the message listener
+initMessageListener(store);
 ```
+
+#####initMessageListener is a new function to fix the bug that if the other tab not triggering any action on first load, it cannot receive any messages.
 
 Init new tabs with existing state:
 
 1. Use initStateWithPrevTab to get existing state from other tabs
 
 ```javascript
-import { createStore, applyMiddleware } from "redux";
-import {
-  createStateSyncMiddleware,
-  initStateWithPrevTab,
-} from "redux-state-sync";
+import { createStore, applyMiddleware } from 'redux';
+import { createStateSyncMiddleware, initStateWithPrevTab } from 'redux-state-sync';
 
 const config = {
-  // TOGGLE_TODO will not be triggered in other tabs
-  blacklist: ["TOGGLE_TODO"],
+    // TOGGLE_TODO will not be triggered in other tabs
+    blacklist: ['TOGGLE_TODO'],
 };
 const middlewares = [createStateSyncMiddleware(config)];
 const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
 // init state with other tabs
 initStateWithPrevTab(store);
+// initMessageListener(store);
 ```
+
+##### Note: if you are already using initStateWithPrevTab, you don't need to initMessageListener anymore.
 
 2. Wrap your root reducer with `withReduxStateSync`
 
 ```javascript
-import { withReduxStateSync } from "redux-state-sync";
+import { withReduxStateSync } from 'redux-state-sync';
 const rootReducer = combineReducers({
-  todos,
-  visibilityFilter,
+    todos,
+    visibilityFilter,
 });
 
 export default withReduxStateSync(rootReducer);
@@ -110,7 +114,7 @@ default: "redux_state_sync"
 
 ```javascript
 const config = {
-  channel: "my_broadcast_channel",
+    channel: 'my_broadcast_channel',
 };
 const middlewares = [createStateSyncMiddleware(config)];
 ```
@@ -127,8 +131,8 @@ default: null
 
 ```javascript
 const config = {
-  // All actions will be triggered in other tabs except 'TOGGLE_TODO'
-  predicate: action => action.type !== "TOGGLE_TODO",
+    // All actions will be triggered in other tabs except 'TOGGLE_TODO'
+    predicate: action => action.type !== 'TOGGLE_TODO',
 };
 const middlewares = [createStateSyncMiddleware(config)];
 ```
@@ -143,8 +147,8 @@ default: []
 
 ```javascript
 const config = {
-  // All actions will be triggered in other tabs except 'TOGGLE_TODO'
-  blacklist: ["TOGGLE_TODO"],
+    // All actions will be triggered in other tabs except 'TOGGLE_TODO'
+    blacklist: ['TOGGLE_TODO'],
 };
 const middlewares = [createStateSyncMiddleware(config)];
 ```
@@ -159,8 +163,8 @@ default: []
 
 ```javascript
 const config = {
-  // Only 'TOGGLE_TODO' will be triggered in other tabs
-  whitelist: ["TOGGLE_TODO"],
+    // Only 'TOGGLE_TODO' will be triggered in other tabs
+    whitelist: ['TOGGLE_TODO'],
 };
 const middlewares = [createStateSyncMiddleware(config)];
 ```
@@ -177,17 +181,21 @@ default: null
 
 ```javascript
 const config = {
-  // Only 'TOGGLE_TODO' will be triggered in other tabs
-  whitelist: ["TOGGLE_TODO"],
-  // enforce a type, oneOf['native', 'idb', 'localstorage', 'node']
-  broadcastChannelOption: { type: "localstorage" },
+    // Only 'TOGGLE_TODO' will be triggered in other tabs
+    whitelist: ['TOGGLE_TODO'],
+    // enforce a type, oneOf['native', 'idb', 'localstorage', 'node']
+    broadcastChannelOption: { type: 'localstorage' },
 };
 const middlewares = [createStateSyncMiddleware(config)];
 ```
 
+###Working with immutable.js
+
+Please check the example_immutable folder.
+
 #### prepareState
 
-Prepare state for sending to channel. Will be helpful when using Immutable.js
+Prepare the initial state for sending to other tabs.
 
 type: `Function`
 
@@ -195,8 +203,19 @@ default: state => state
 
 ```javascript
 const config = {
-  // Map immutable object to js
-  prepareState: state => state.toJS(),
+    // Map immutable object to js
+    prepareState: state => state.toJS(),
 };
 const middlewares = [createStateSyncMiddleware(config)];
+```
+
+```javascript
+import { combineReducers } from 'redux-immutable';
+import { withReduxStateSync } from 'redux-state-sync';
+const rootReducer = combineReducers({
+    todos,
+    visibilityFilter,
+});
+
+export default withReduxStateSync(appReducer, state => Immutable.fromJS(state));
 ```

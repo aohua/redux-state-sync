@@ -3,23 +3,20 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
+exports.initMessageListener = exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
 exports.generateUuidForAction = generateUuidForAction;
 exports.isActionAllowed = isActionAllowed;
 exports.isActionSynced = isActionSynced;
-exports.createMessageListener = createMessageListener;
+exports.MessageListener = MessageListener;
 
 var _broadcastChannel = require('broadcast-channel');
-
-var _broadcastChannel2 = _interopRequireDefault(_broadcastChannel);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var lastUuid = 0; /* eslint-env browser */
 
 var GET_INIT_STATE = '&_GET_INIT_STATE';
 var SEND_INIT_STATE = '&_SEND_INIT_STATE';
 var RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
+var INIT_MESSAGE_LISTENER = '&_INIT_MESSAGE_LISTENER';
 
 var defaultConfig = {
   channel: 'redux_state_sync',
@@ -41,6 +38,9 @@ var sendIniteState = function sendIniteState() {
 var receiveIniteState = function receiveIniteState(state) {
   return { type: RECEIVE_INIT_STATE, payload: state };
 };
+var initListener = function initListener() {
+  return { type: INIT_MESSAGE_LISTENER };
+};
 
 function s4() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -52,8 +52,6 @@ function guid() {
 
 // generate current window unique id
 var WINDOW_STATE_SYNC_ID = guid();
-// if the message receiver is already created
-var isMessageListenerCreated = false;
 // export for test
 function generateUuidForAction(action) {
   var stampedAction = action;
@@ -89,15 +87,14 @@ function isActionSynced(action) {
   return !!action.$isSync;
 }
 // export for test
-function createMessageListener(_ref2) {
+function MessageListener(_ref2) {
   var channel = _ref2.channel,
       dispatch = _ref2.dispatch,
       allowed = _ref2.allowed;
 
   var isSynced = false;
   var tabs = {};
-  var messageChannel = channel;
-  messageChannel.onmessage = function (stampedAction) {
+  this.handleOnMessage = function (stampedAction) {
     // Ignore if this action is triggered by this window
     if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
       return;
@@ -116,7 +113,6 @@ function createMessageListener(_ref2) {
           isSynced = true;
           dispatch(receiveIniteState(stampedAction.payload));
         }
-        return;
       } else if (allowed(stampedAction)) {
         lastUuid = stampedAction.$uuid;
         dispatch(Object.assign(stampedAction, {
@@ -125,14 +121,17 @@ function createMessageListener(_ref2) {
       }
     }
   };
+  this.messageChannel = channel;
+  this.messageChannel.onmessage = this.handleOnMessage;
 }
 
 var createStateSyncMiddleware = exports.createStateSyncMiddleware = function createStateSyncMiddleware() {
   var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultConfig;
 
   var allowed = isActionAllowed(config);
-  var channel = new _broadcastChannel2.default(config.channel, config.broadcastChannelOption);
+  var channel = new _broadcastChannel.BroadcastChannel(config.channel, config.broadcastChannelOption);
   var prepareState = config.prepareState || defaultConfig.prepareState;
+  var messageListener = null;
 
   return function (_ref3) {
     var getState = _ref3.getState,
@@ -140,9 +139,8 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
     return function (next) {
       return function (action) {
         // create message receiver
-        if (!isMessageListenerCreated) {
-          isMessageListenerCreated = true;
-          createMessageListener({ channel: channel, dispatch: dispatch, allowed: allowed });
+        if (!messageListener) {
+          messageListener = new MessageListener({ channel: channel, dispatch: dispatch, allowed: allowed });
         }
         // post messages
         if (action && !action.$uuid) {
@@ -171,28 +169,35 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
   };
 };
 
-var createReduxStateSync = exports.createReduxStateSync = function createReduxStateSync(_ref4) {
-  var prepareState = _ref4.prepareState;
-  return function (appReducer) {
-    return function (state, action) {
-      var initState = state;
-      if (action.type === RECEIVE_INIT_STATE) {
-        initState = prepareState(action.payload);
-      }
-      return appReducer(initState, action);
-    };
+// eslint-disable-next-line max-len
+var createReduxStateSync = exports.createReduxStateSync = function createReduxStateSync(appReducer) {
+  var prepareState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultConfig.predicate;
+  return function (state, action) {
+    var initState = state;
+    if (action.type === RECEIVE_INIT_STATE) {
+      initState = prepareState(action.payload);
+    }
+    return appReducer(initState, action);
   };
 };
 
 // init state with other tab's state
-var withReduxStateSync = exports.withReduxStateSync = createReduxStateSync({
-  prepareState: function prepareState(state) {
-    return state;
-  }
-});
+var withReduxStateSync = exports.withReduxStateSync = createReduxStateSync;
 
-var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWithPrevTab(_ref5) {
-  var dispatch = _ref5.dispatch;
+var initStateWithPrevTab = exports.initStateWithPrevTab = function initStateWithPrevTab(_ref4) {
+  var dispatch = _ref4.dispatch;
 
   dispatch(getIniteState());
+};
+
+/*
+if don't dispath any action, the store.dispath will not be available for message listener.
+therefor need to trigger an empty action to init the messageListener.
+
+however, if already using initStateWithPrevTab, this function will be redundant
+*/
+var initMessageListener = exports.initMessageListener = function initMessageListener(_ref5) {
+  var dispatch = _ref5.dispatch;
+
+  dispatch(initListener());
 };

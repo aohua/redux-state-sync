@@ -1,4 +1,5 @@
-import { combineReducers } from 'redux';
+import { combineReducers } from 'redux-immutable';
+import Immutable from 'immutable';
 import todo from './todo';
 import todos from './todos';
 import visibilityFilter from './visibilityFilter';
@@ -10,4 +11,4 @@ const appReducer = combineReducers({
     visibilityFilter,
 });
 
-export default withReduxStateSync(appReducer);
+export default withReduxStateSync(appReducer, state => Immutable.fromJS(state));

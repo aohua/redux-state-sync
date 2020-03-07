@@ -7,12 +7,12 @@ export default {
   output: {
     path: join(__dirname, 'dist'),
     libraryTarget: 'umd',
-    library: 'reduxStateSync'
+    library: 'reduxStateSync',
   },
   devtool: 'source-map',
   module: {
-    loaders: [
-      {test: /\.js$/, loader: 'babel-loader', include}
-    ]
-  }
-}
+    rules: [
+      { test: /\.js$/, loader: 'babel-loader', include },
+    ],
+  },
+};
