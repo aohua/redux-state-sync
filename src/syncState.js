@@ -12,12 +12,12 @@ const defaultConfig = {
     blacklist: [],
     whitelist: [],
     broadcastChannelOption: null,
-    prepareState: state => state,
+    prepareState: (state) => state,
 };
 
 const getIniteState = () => ({ type: GET_INIT_STATE });
 const sendIniteState = () => ({ type: SEND_INIT_STATE });
-const receiveIniteState = state => ({ type: RECEIVE_INIT_STATE, payload: state });
+const receiveIniteState = (state) => ({ type: RECEIVE_INIT_STATE, payload: state });
 const initListener = () => ({ type: INIT_MESSAGE_LISTENER });
 
 function s4() {
@@ -46,9 +46,9 @@ export function isActionAllowed({ predicate, blacklist, whitelist }) {
     if (predicate && typeof predicate === 'function') {
         allowed = predicate;
     } else if (Array.isArray(blacklist)) {
-        allowed = action => blacklist.indexOf(action.type) < 0;
+        allowed = (action) => blacklist.indexOf(action.type) < 0;
     } else if (Array.isArray(whitelist)) {
-        allowed = action => whitelist.indexOf(action.type) >= 0;
+        allowed = (action) => whitelist.indexOf(action.type) >= 0;
     }
     return allowed;
 }
@@ -60,7 +60,7 @@ export function isActionSynced(action) {
 export function MessageListener({ channel, dispatch, allowed }) {
     let isSynced = false;
     const tabs = {};
-    this.handleOnMessage = stampedAction => {
+    this.handleOnMessage = (stampedAction) => {
         // Ignore if this action is triggered by this window
         if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
             return;
@@ -93,13 +93,14 @@ export function MessageListener({ channel, dispatch, allowed }) {
     this.messageChannel.onmessage = this.handleOnMessage;
 }
 
-export const createStateSyncMiddleware = (config = defaultConfig) => {
-    const allowed = isActionAllowed(config);
-    const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
-    const prepareState = config.prepareState || defaultConfig.prepareState;
+export const createStateSyncMiddleware = (partialConfig) => {
+    const completeConfig = { ...defaultConfig, ...partialConfig };
+    const allowed = isActionAllowed(completeConfig);
+    const channel = new BroadcastChannel(completeConfig.channel, completeConfig.broadcastChannelOption);
+    const prepareState = completeConfig.prepareState;
     let messageListener = null;
 
-    return ({ getState, dispatch }) => next => action => {
+    return ({ getState, dispatch }) => (next) => (action) => {
         // create message receiver
         if (!messageListener) {
             messageListener = new MessageListener({ channel, dispatch, allowed });
