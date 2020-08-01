@@ -11,7 +11,7 @@ const defaultConfig = {
     predicate: null,
     blacklist: [],
     whitelist: [],
-    broadcastChannelOption: null,
+    broadcastChannelOption: undefined,
     prepareState: state => state,
 };
 
