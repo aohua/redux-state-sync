@@ -22,7 +22,7 @@ var defaultConfig = {
     predicate: null,
     blacklist: [],
     whitelist: [],
-    broadcastChannelOption: null,
+    broadcastChannelOption: undefined,
     prepareState: function prepareState(state) {
         return state;
     }
