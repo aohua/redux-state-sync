@@ -69,7 +69,7 @@ const config = {
 };
 const middlewares = [createStateSyncMiddleware(config)];
 const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
-// this is used to pass store.dsipatch to the message listener
+// this is used to pass store.dispatch to the message listener
 initMessageListener(store);
 ```
 
