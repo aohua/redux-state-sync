@@ -53,7 +53,7 @@ Types are defined [here](https://github.com/DefinitelyTyped/DefinitelyTyped/blob
 
 Please take note that BroadcastChannel can only send data that is supported by the [structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) (Strings, Objects, Arrays, Blobs, ArrayBuffer, Map), so you need to make sure that the actions that you wanna send to other tabs doesn't include any functions in the payload.
 
-If you are using redux-persist, you may need to blacklist some of the actions that is triggered by redux-persist. e.g. persist/PERSIST, persist/REHYDRATE, etc.
+If you are using redux-persist, you may need to blacklist some of the actions that is triggered by redux-persist. e.g. `'persist/PERSIST'`, `'persist/REHYDRATE'`, etc.
 
 ### How to use
 
