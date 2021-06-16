@@ -128,7 +128,14 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
     var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultConfig;
 
     var allowed = isActionAllowed(config);
-    var channel = new _broadcastChannel.BroadcastChannel(config.channel, config.broadcastChannelOption);
+    var broadcastChannelOption = Object.assign({
+        onclose: function onclose() {
+            channel.close();
+            channel = new _broadcastChannel.BroadcastChannel(config.channel, broadcastChannelOption);
+            messageListener = null;
+        }
+    }, config.broadcastChannelOption);
+    var channel = new _broadcastChannel.BroadcastChannel(config.channel, broadcastChannelOption);
     var prepareState = config.prepareState || defaultConfig.prepareState;
     var messageListener = null;
 

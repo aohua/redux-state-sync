@@ -95,7 +95,14 @@ export function MessageListener({ channel, dispatch, allowed }) {
 
 export const createStateSyncMiddleware = (config = defaultConfig) => {
     const allowed = isActionAllowed(config);
-    const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
+    const broadcastChannelOption = Object.assign({
+        onclose: () => {
+            channel.close();
+            channel = new BroadcastChannel(config.channel, broadcastChannelOption);
+            messageListener = null;
+        }
+    }, config.broadcastChannelOption);
+    let channel = new BroadcastChannel(config.channel, broadcastChannelOption);
     const prepareState = config.prepareState || defaultConfig.prepareState;
     let messageListener = null;
 
