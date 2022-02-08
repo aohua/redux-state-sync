@@ -11,7 +11,8 @@
         "test": "jest",
         "build": "tsc --build",
         "clean": "tsc --build --clean",
-        "eslint": "eslint"
+        "eslint": "eslint",
+        "prepare": "husky install client/.husky"
     },
     "repository": {
         "type": "git",
@@ -40,7 +41,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "npx pretty-quick --staged ng lint ng test",
+            "pre-commit": "npx pretty-quick --staged ng lint ng test"
         }
     },
     "devDependencies": {
