@@ -4,7 +4,8 @@
         "target": "es2015",
         "declaration": true,
         "outDir": "./dist",
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "noImplicitAny": true
     },
     "include": ["src/**/*"]
 }

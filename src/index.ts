@@ -1,98 +1,56 @@
 import { BroadcastChannel } from 'broadcast-channel';
-import { GET_INIT_STATE, SEND_INIT_STATE, RECEIVE_INIT_STATE } from './actions';
+import { AnyAction } from 'redux';
+import { GET_INIT_STATE, SEND_INIT_STATE, RECEIVE_INIT_STATE, getIniteState, initListener } from './actions';
+import MessageListener from './messageListener';
 import { defaultConfig } from './constants';
+import { guid, generateUuidForAction } from './utils';
+
+import { Config } from './types';
 
 let lastUuid = 0;
 
-function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-}
-
-function guid() {
-    return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
-}
-
 // generate current window unique id
 const WINDOW_STATE_SYNC_ID = guid();
-// export for test
-export function generateUuidForAction(action) {
-    const stampedAction = action;
-    stampedAction.$uuid = guid();
-    stampedAction.$wuid = WINDOW_STATE_SYNC_ID;
-    return stampedAction;
-}
-// export for test
-export function isActionAllowed({ predicate, blacklist, whitelist }) {
-    let allowed = () => true;
+
+export function isActionAllowed({ predicate, blacklist, whitelist }: Config) {
+    let allowed: typeof predicate = () => true;
 
     if (predicate && typeof predicate === 'function') {
         allowed = predicate;
     } else if (Array.isArray(blacklist)) {
-        allowed = (action) => blacklist.indexOf(action.type) < 0;
+        allowed = (action: AnyAction) => blacklist.indexOf(action.type) < 0;
     } else if (Array.isArray(whitelist)) {
-        allowed = (action) => whitelist.indexOf(action.type) >= 0;
+        allowed = (action: AnyAction) => whitelist.indexOf(action.type) >= 0;
     }
     return allowed;
 }
-// export for test
-export function isActionSynced(action) {
+
+export function isActionSynced(action: AnyAction) {
     return !!action.$isSync;
 }
-// export for test
-export function MessageListener({ channel, dispatch, allowed }) {
-    let isSynced = false;
-    const tabs = {};
-    this.handleOnMessage = (stampedAction) => {
-        // Ignore if this action is triggered by this window
-        if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
-            return;
-        }
-        // IE bug https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-        if (stampedAction.type === RECEIVE_INIT_STATE) {
-            return;
-        }
-        // ignore other values that saved to localstorage.
-        if (stampedAction.$uuid && stampedAction.$uuid !== lastUuid) {
-            if (stampedAction.type === GET_INIT_STATE && !tabs[stampedAction.$wuid]) {
-                tabs[stampedAction.$wuid] = true;
-                dispatch(sendIniteState());
-            } else if (stampedAction.type === SEND_INIT_STATE && !tabs[stampedAction.$wuid]) {
-                if (!isSynced) {
-                    isSynced = true;
-                    dispatch(receiveIniteState(stampedAction.payload));
-                }
-            } else if (allowed(stampedAction)) {
-                lastUuid = stampedAction.$uuid;
-                dispatch(
-                    Object.assign(stampedAction, {
-                        $isSync: true,
-                    }),
-                );
-            }
-        }
-    };
-    this.messageChannel = channel;
-    this.messageChannel.onmessage = this.handleOnMessage;
-}
 
-export const createStateSyncMiddleware = (config = defaultConfig) => {
+export const createStateSyncMiddleware = (config: Config = defaultConfig) => {
     const allowed = isActionAllowed(config);
     const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
     const prepareState = config.prepareState || defaultConfig.prepareState;
-    let messageListener = null;
+    let messageListener: MessageListener | null = null;
 
     return ({ getState, dispatch }) =>
         (next) =>
         (action) => {
             // create message receiver
             if (!messageListener) {
-                messageListener = new MessageListener({ channel, dispatch, allowed });
+                messageListener = new MessageListener({
+                    channel,
+                    dispatch,
+                    allowed,
+                    lastUuid,
+                    windowId: WINDOW_STATE_SYNC_ID,
+                });
             }
             // post messages
             if (action && !action.$uuid) {
-                const stampedAction = generateUuidForAction(action);
+                const stampedAction = generateUuidForAction(action, WINDOW_STATE_SYNC_ID);
                 lastUuid = stampedAction.$uuid;
                 try {
                     if (action.type === SEND_INIT_STATE) {
