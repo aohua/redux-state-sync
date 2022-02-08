@@ -2,16 +2,15 @@
     "name": "redux-state-sync",
     "version": "3.1.2",
     "description": "A middleware for redux to sync state in different tabs",
-    "main": "dist/syncState.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "/dist"
+    ],
     "scripts": {
         "test": "jest",
-        "commit": "git-cz",
-        "prebuild": "rimraf dist",
-        "build": "npm-run-all --parallel build:*",
-        "build:main": "babel --copy-files --out-dir dist --ignore *.test.js src",
-        "build:umd": "webpack --output-filename syncState.umd.js",
-        "build:umd.min": "webpack --output-filename syncState.umd.min.js -p",
-        "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+        "build": "tsc --build",
+        "clean": "tsc --build --clean"
     },
     "repository": {
         "type": "git",
@@ -27,35 +26,11 @@
         "middleware"
     ],
     "author": "AOHUA",
-    "license": "ISC",
+    "license": "MIT",
     "bugs": {
         "url": "https://github.com/AOHUA/redux-state-sync/issues"
     },
     "homepage": "https://github.com/AOHUA/redux-state-sync#readme",
-    "devDependencies": {
-        "babel-cli": "^6.26.0",
-        "babel-jest": "^25.1.0",
-        "babel-loader": "^7.0.0",
-        "babel-polyfill": "^6.16.0",
-        "babel-preset-es2015": "^6.18.0",
-        "babel-register": "^6.18.0",
-        "commitizen": "^2.8.6",
-        "cz-conventional-changelog": "^1.2.0",
-        "eslint": "^6.8.0",
-        "eslint-config-airbnb": "^18.0.1",
-        "eslint-config-prettier": "^6.10.0",
-        "eslint-plugin-import": "^2.20.1",
-        "eslint-plugin-jsx-a11y": "^6.2.3",
-        "eslint-plugin-react": "^7.19.0",
-        "jest": "^23.6.0",
-        "npm-run-all": "^4.1.5",
-        "prettier": "1.19.1",
-        "prettier-eslint": "^9.0.1",
-        "rimraf": "^3.0.2",
-        "semantic-release": "^17.0.4",
-        "webpack": "^4.42.0",
-        "webpack-cli": "^3.3.11"
-    },
     "dependencies": {
         "broadcast-channel": "^3.1.0"
     },
@@ -65,7 +40,7 @@
         ],
         "verbose": true
     },
-    "czConfig": {
-        "path": "node_modules/cz-conventional-changelog"
+    "devDependencies": {
+        "typescript": "^4.5.5"
     }
 }
