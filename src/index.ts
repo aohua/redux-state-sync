@@ -1,24 +1,8 @@
 import { BroadcastChannel } from 'broadcast-channel';
+import { GET_INIT_STATE, SEND_INIT_STATE, RECEIVE_INIT_STATE } from './actions';
+import { defaultConfig } from './constants';
 
 let lastUuid = 0;
-const GET_INIT_STATE = '&_GET_INIT_STATE';
-const SEND_INIT_STATE = '&_SEND_INIT_STATE';
-const RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
-const INIT_MESSAGE_LISTENER = '&_INIT_MESSAGE_LISTENER';
-
-const defaultConfig = {
-    channel: 'redux_state_sync',
-    predicate: null,
-    blacklist: [],
-    whitelist: [],
-    broadcastChannelOption: undefined,
-    prepareState: state => state,
-};
-
-const getIniteState = () => ({ type: GET_INIT_STATE });
-const sendIniteState = () => ({ type: SEND_INIT_STATE });
-const receiveIniteState = state => ({ type: RECEIVE_INIT_STATE, payload: state });
-const initListener = () => ({ type: INIT_MESSAGE_LISTENER });
 
 function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
@@ -46,9 +30,9 @@ export function isActionAllowed({ predicate, blacklist, whitelist }) {
     if (predicate && typeof predicate === 'function') {
         allowed = predicate;
     } else if (Array.isArray(blacklist)) {
-        allowed = action => blacklist.indexOf(action.type) < 0;
+        allowed = (action) => blacklist.indexOf(action.type) < 0;
     } else if (Array.isArray(whitelist)) {
-        allowed = action => whitelist.indexOf(action.type) >= 0;
+        allowed = (action) => whitelist.indexOf(action.type) >= 0;
     }
     return allowed;
 }
@@ -60,7 +44,7 @@ export function isActionSynced(action) {
 export function MessageListener({ channel, dispatch, allowed }) {
     let isSynced = false;
     const tabs = {};
-    this.handleOnMessage = stampedAction => {
+    this.handleOnMessage = (stampedAction) => {
         // Ignore if this action is triggered by this window
         if (stampedAction.$wuid === WINDOW_STATE_SYNC_ID) {
             return;
@@ -99,46 +83,50 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
     const prepareState = config.prepareState || defaultConfig.prepareState;
     let messageListener = null;
 
-    return ({ getState, dispatch }) => next => action => {
-        // create message receiver
-        if (!messageListener) {
-            messageListener = new MessageListener({ channel, dispatch, allowed });
-        }
-        // post messages
-        if (action && !action.$uuid) {
-            const stampedAction = generateUuidForAction(action);
-            lastUuid = stampedAction.$uuid;
-            try {
-                if (action.type === SEND_INIT_STATE) {
-                    if (getState()) {
-                        stampedAction.payload = prepareState(getState());
+    return ({ getState, dispatch }) =>
+        (next) =>
+        (action) => {
+            // create message receiver
+            if (!messageListener) {
+                messageListener = new MessageListener({ channel, dispatch, allowed });
+            }
+            // post messages
+            if (action && !action.$uuid) {
+                const stampedAction = generateUuidForAction(action);
+                lastUuid = stampedAction.$uuid;
+                try {
+                    if (action.type === SEND_INIT_STATE) {
+                        if (getState()) {
+                            stampedAction.payload = prepareState(getState());
+                            channel.postMessage(stampedAction);
+                        }
+                        return next(action);
+                    }
+                    if (allowed(stampedAction) || action.type === GET_INIT_STATE) {
                         channel.postMessage(stampedAction);
                     }
-                    return next(action);
+                } catch (e) {
+                    console.error("Your browser doesn't support cross tab communication");
                 }
-                if (allowed(stampedAction) || action.type === GET_INIT_STATE) {
-                    channel.postMessage(stampedAction);
-                }
-            } catch (e) {
-                console.error("Your browser doesn't support cross tab communication");
             }
-        }
-        return next(
-            Object.assign(action, {
-                $isSync: typeof action.$isSync === 'undefined' ? false : action.$isSync,
-            }),
-        );
-    };
+            return next(
+                Object.assign(action, {
+                    $isSync: typeof action.$isSync === 'undefined' ? false : action.$isSync,
+                }),
+            );
+        };
 };
 
 // eslint-disable-next-line max-len
-export const createReduxStateSync = (appReducer, prepareState = defaultConfig.prepareState) => (state, action) => {
-    let initState = state;
-    if (action.type === RECEIVE_INIT_STATE) {
-        initState = prepareState(action.payload);
-    }
-    return appReducer(initState, action);
-};
+export const createReduxStateSync =
+    (appReducer, prepareState = defaultConfig.prepareState) =>
+    (state, action) => {
+        let initState = state;
+        if (action.type === RECEIVE_INIT_STATE) {
+            initState = prepareState(action.payload);
+        }
+        return appReducer(initState, action);
+    };
 
 // init state with other tab's state
 export const withReduxStateSync = createReduxStateSync;
