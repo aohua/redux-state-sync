@@ -1,10 +1,10 @@
 import { BroadcastChannel } from 'broadcast-channel';
 
 let lastUuid = 0;
-const GET_INIT_STATE = '&_GET_INIT_STATE';
-const SEND_INIT_STATE = '&_SEND_INIT_STATE';
-const RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
-const INIT_MESSAGE_LISTENER = '&_INIT_MESSAGE_LISTENER';
+export const GET_INIT_STATE = '&_GET_INIT_STATE';
+export const SEND_INIT_STATE = '&_SEND_INIT_STATE';
+export const RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
+export const INIT_MESSAGE_LISTENER = '&_INIT_MESSAGE_LISTENER';
 
 const defaultConfig = {
     channel: 'redux_state_sync',
@@ -31,7 +31,7 @@ function guid() {
 }
 
 // generate current window unique id
-const WINDOW_STATE_SYNC_ID = guid();
+export const WINDOW_STATE_SYNC_ID = guid();
 // export for test
 export function generateUuidForAction(action) {
     const stampedAction = action;
