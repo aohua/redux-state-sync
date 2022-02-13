@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.initMessageListener = exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = undefined;
+exports.initMessageListener = exports.initStateWithPrevTab = exports.withReduxStateSync = exports.createReduxStateSync = exports.createStateSyncMiddleware = exports.WINDOW_STATE_SYNC_ID = exports.INIT_MESSAGE_LISTENER = exports.RECEIVE_INIT_STATE = exports.SEND_INIT_STATE = exports.GET_INIT_STATE = undefined;
 exports.generateUuidForAction = generateUuidForAction;
 exports.isActionAllowed = isActionAllowed;
 exports.isActionSynced = isActionSynced;
@@ -12,10 +12,10 @@ exports.MessageListener = MessageListener;
 var _broadcastChannel = require('broadcast-channel');
 
 var lastUuid = 0;
-var GET_INIT_STATE = '&_GET_INIT_STATE';
-var SEND_INIT_STATE = '&_SEND_INIT_STATE';
-var RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
-var INIT_MESSAGE_LISTENER = '&_INIT_MESSAGE_LISTENER';
+var GET_INIT_STATE = exports.GET_INIT_STATE = '&_GET_INIT_STATE';
+var SEND_INIT_STATE = exports.SEND_INIT_STATE = '&_SEND_INIT_STATE';
+var RECEIVE_INIT_STATE = exports.RECEIVE_INIT_STATE = '&_RECEIVE_INIT_STATE';
+var INIT_MESSAGE_LISTENER = exports.INIT_MESSAGE_LISTENER = '&_INIT_MESSAGE_LISTENER';
 
 var defaultConfig = {
     channel: 'redux_state_sync',
@@ -50,7 +50,7 @@ function guid() {
 }
 
 // generate current window unique id
-var WINDOW_STATE_SYNC_ID = guid();
+var WINDOW_STATE_SYNC_ID = exports.WINDOW_STATE_SYNC_ID = guid();
 // export for test
 function generateUuidForAction(action) {
     var stampedAction = action;
