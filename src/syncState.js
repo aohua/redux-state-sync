@@ -135,7 +135,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
 export const createReduxStateSync = (appReducer, prepareState = defaultConfig.prepareState) => (state, action) => {
     let initState = state;
     if (action.type === RECEIVE_INIT_STATE) {
-        initState = prepareState(action.payload);
+        initState = prepareState(state, action.payload);
     }
     return appReducer(initState, action);
 };
