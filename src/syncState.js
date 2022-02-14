@@ -13,6 +13,7 @@ const defaultConfig = {
     whitelist: [],
     broadcastChannelOption: undefined,
     prepareState: state => state,
+    receiveState: state => state,
 };
 
 const getIniteState = () => ({ type: GET_INIT_STATE });
@@ -132,10 +133,10 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
 };
 
 // eslint-disable-next-line max-len
-export const createReduxStateSync = (appReducer, prepareState = defaultConfig.prepareState) => (state, action) => {
+export const createReduxStateSync = (appReducer, receiveState = defaultConfig.receiveState) => (state, action) => {
     let initState = state;
     if (action.type === RECEIVE_INIT_STATE) {
-        initState = prepareState(state, action.payload);
+        initState = receiveState(state, action.payload);
     }
     return appReducer(initState, action);
 };
