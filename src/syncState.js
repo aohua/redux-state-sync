@@ -13,7 +13,7 @@ const defaultConfig = {
     whitelist: [],
     broadcastChannelOption: undefined,
     prepareState: state => state,
-    receiveState: state => state,
+    receiveState: (prevState, nextState) => nextState,
 };
 
 const getIniteState = () => ({ type: GET_INIT_STATE });

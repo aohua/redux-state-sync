@@ -26,8 +26,8 @@ var defaultConfig = {
     prepareState: function prepareState(state) {
         return state;
     },
-    receiveState: function receiveState(state) {
-        return state;
+    receiveState: function receiveState(prevState, nextState) {
+        return nextState;
     }
 };
 
