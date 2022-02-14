@@ -13,6 +13,7 @@ const defaultConfig = {
     whitelist: [],
     broadcastChannelOption: undefined,
     prepareState: state => state,
+    prepareAction: action => action
 };
 
 const getIniteState = () => ({ type: GET_INIT_STATE });
@@ -97,6 +98,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
     const allowed = isActionAllowed(config);
     const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
     const prepareState = config.prepareState || defaultConfig.prepareState;
+    const prepareAction = config.prepareAction || defaultConfig.prepareAction;
     let messageListener = null;
 
     return ({ getState, dispatch }) => next => action => {
@@ -106,7 +108,8 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
         }
         // post messages
         if (action && !action.$uuid) {
-            const stampedAction = generateUuidForAction(action);
+            let stampedAction = prepareAction(action);
+            stampedAction = generateUuidForAction(action);
             lastUuid = stampedAction.$uuid;
             try {
                 if (action.type === SEND_INIT_STATE) {
