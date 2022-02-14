@@ -25,6 +25,9 @@ var defaultConfig = {
     broadcastChannelOption: undefined,
     prepareState: function prepareState(state) {
         return state;
+    },
+    prepareAction: function prepareAction(action) {
+        return action;
     }
 };
 
@@ -130,6 +133,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
     var allowed = isActionAllowed(config);
     var channel = new _broadcastChannel.BroadcastChannel(config.channel, config.broadcastChannelOption);
     var prepareState = config.prepareState || defaultConfig.prepareState;
+    var prepareAction = config.prepareAction || defaultConfig.prepareAction;
     var messageListener = null;
 
     return function (_ref3) {
@@ -143,7 +147,8 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
                 }
                 // post messages
                 if (action && !action.$uuid) {
-                    var stampedAction = generateUuidForAction(action);
+                    var stampedAction = prepareAction(action);
+                    stampedAction = generateUuidForAction(action);
                     lastUuid = stampedAction.$uuid;
                     try {
                         if (action.type === SEND_INIT_STATE) {
