@@ -148,7 +148,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
                 // post messages
                 if (action && !action.$uuid) {
                     var stampedAction = prepareAction(action);
-                    stampedAction = generateUuidForAction(action);
+                    stampedAction = generateUuidForAction(stampedAction);
                     lastUuid = stampedAction.$uuid;
                     try {
                         if (action.type === SEND_INIT_STATE) {
