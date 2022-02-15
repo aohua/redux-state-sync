@@ -109,7 +109,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
         // post messages
         if (action && !action.$uuid) {
             let stampedAction = prepareAction(action);
-            stampedAction = generateUuidForAction(action);
+            stampedAction = generateUuidForAction(stampedAction);
             lastUuid = stampedAction.$uuid;
             try {
                 if (action.type === SEND_INIT_STATE) {
