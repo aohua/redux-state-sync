@@ -1,3 +1,4 @@
+import { AnyAction } from 'redux';
 function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
         .toString(16)
@@ -8,7 +9,7 @@ export function guid() {
     return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
 }
 
-export function generateUuidForAction(action, windowId) {
+export function generateUuidForAction(action: AnyAction, windowId: string | number) {
     const stampedAction = action;
     stampedAction.$uuid = guid();
     stampedAction.$wuid = windowId;

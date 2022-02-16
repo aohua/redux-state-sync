@@ -1,5 +1,5 @@
 import { BroadcastChannel } from 'broadcast-channel';
-import { AnyAction } from 'redux';
+import { AnyAction, Middleware, Dispatch, Reducer } from 'redux';
 import { GET_INIT_STATE, SEND_INIT_STATE, RECEIVE_INIT_STATE, getIniteState, initListener } from './actions';
 import MessageListener from './messageListener';
 import { defaultConfig } from './constants';
@@ -35,7 +35,8 @@ export const createStateSyncMiddleware = (config: Config = defaultConfig) => {
     const prepareState = config.prepareState || defaultConfig.prepareState;
     let messageListener: MessageListener | null = null;
 
-    return ({ getState, dispatch }) =>
+    const middleware: Middleware =
+        ({ getState, dispatch }) =>
         (next) =>
         (action) => {
             // create message receiver
@@ -73,12 +74,13 @@ export const createStateSyncMiddleware = (config: Config = defaultConfig) => {
                 }),
             );
         };
+    return middleware;
 };
 
 // eslint-disable-next-line max-len
 export const createReduxStateSync =
-    (appReducer, prepareState = defaultConfig.prepareState) =>
-    (state, action) => {
+    (appReducer: Reducer, prepareState = defaultConfig.prepareState) =>
+    (state: any, action: AnyAction) => {
         let initState = state;
         if (action.type === RECEIVE_INIT_STATE) {
             initState = prepareState(action.payload);
@@ -89,7 +91,7 @@ export const createReduxStateSync =
 // init state with other tab's state
 export const withReduxStateSync = createReduxStateSync;
 
-export const initStateWithPrevTab = ({ dispatch }) => {
+export const initStateWithPrevTab = ({ dispatch }: { dispatch: Dispatch<AnyAction> }) => {
     dispatch(getIniteState());
 };
 
@@ -99,6 +101,6 @@ therefor need to trigger an empty action to init the messageListener.
 
 however, if already using initStateWithPrevTab, this function will be redundant
 */
-export const initMessageListener = ({ dispatch }) => {
+export const initMessageListener = ({ dispatch }: { dispatch: Dispatch<AnyAction> }) => {
     dispatch(initListener());
 };
