@@ -227,3 +227,18 @@ const rootReducer = combineReducers({
 
 export default withReduxStateSync(appReducer, state => Immutable.fromJS(state));
 ```
+
+#### prepareAction
+
+Prepare actions for sending to other tabs.
+
+type: `Function`
+
+default: action => action
+
+```javascript
+const config = {
+    prepareAction: action => action,
+};
+const middlewares = [createStateSyncMiddleware(config)];
+```

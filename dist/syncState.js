@@ -26,6 +26,9 @@ var defaultConfig = {
     prepareState: function prepareState(state) {
         return state;
     },
+    receiveState: function receiveState(prevState, nextState) {
+        return nextState;
+    },
     prepareAction: function prepareAction(action) {
         return action;
     }
@@ -175,11 +178,11 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
 
 // eslint-disable-next-line max-len
 var createReduxStateSync = exports.createReduxStateSync = function createReduxStateSync(appReducer) {
-    var prepareState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultConfig.prepareState;
+    var receiveState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultConfig.receiveState;
     return function (state, action) {
         var initState = state;
         if (action.type === RECEIVE_INIT_STATE) {
-            initState = prepareState(action.payload);
+            initState = receiveState(state, action.payload);
         }
         return appReducer(initState, action);
     };
