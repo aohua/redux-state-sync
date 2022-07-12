@@ -217,6 +217,22 @@ const config = {
 const middlewares = [createStateSyncMiddleware(config)];
 ```
 
+#### receiveState
+
+Reconcile the incoming state from other tabs with the existing state.
+
+type: `Function`
+
+default: (prevState, nextState) => nextState
+
+```javascript
+const config = {
+    // Overwrite existing state with incoming state
+    receiveState: (prevState, nextState) => nextState,
+};
+const middlewares = [createStateSyncMiddleware(config)];
+```
+
 ```javascript
 import { combineReducers } from 'redux-immutable';
 import { withReduxStateSync } from 'redux-state-sync';
@@ -225,5 +241,6 @@ const rootReducer = combineReducers({
     visibilityFilter,
 });
 
-export default withReduxStateSync(appReducer, state => Immutable.fromJS(state));
+// Overwrite existing state with incoming state
+export default withReduxStateSync(appReducer, (prevState, nextState) => nextState);
 ```
