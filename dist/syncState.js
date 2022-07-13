@@ -28,6 +28,9 @@ var defaultConfig = {
     },
     receiveState: function receiveState(prevState, nextState) {
         return nextState;
+    },
+    prepareAction: function prepareAction(action) {
+        return action;
     }
 };
 
@@ -133,6 +136,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
     var allowed = isActionAllowed(config);
     var channel = new _broadcastChannel.BroadcastChannel(config.channel, config.broadcastChannelOption);
     var prepareState = config.prepareState || defaultConfig.prepareState;
+    var prepareAction = config.prepareAction || defaultConfig.prepareAction;
     var messageListener = null;
 
     return function (_ref3) {
@@ -146,9 +150,11 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
                 }
                 // post messages
                 if (action && !action.$uuid) {
-                    var stampedAction = generateUuidForAction(action);
-                    lastUuid = stampedAction.$uuid;
                     try {
+                        var preparedAction = prepareAction(action);
+                        var stampedAction = generateUuidForAction(preparedAction);
+                        lastUuid = stampedAction.$uuid;
+
                         if (action.type === SEND_INIT_STATE) {
                             if (getState()) {
                                 stampedAction.payload = prepareState(getState());
@@ -160,7 +166,7 @@ var createStateSyncMiddleware = exports.createStateSyncMiddleware = function cre
                             channel.postMessage(stampedAction);
                         }
                     } catch (e) {
-                        console.error("Your browser doesn't support cross tab communication");
+                        console.error("An error occurred while posting an action");
                     }
                 }
                 return next(Object.assign(action, {

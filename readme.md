@@ -244,3 +244,18 @@ const rootReducer = combineReducers({
 // Overwrite existing state with incoming state
 export default withReduxStateSync(appReducer, (prevState, nextState) => nextState);
 ```
+
+#### prepareAction
+
+Prepare actions for sending to other tabs.
+
+type: `Function`
+
+default: action => action
+
+```javascript
+const config = {
+    prepareAction: action => action,
+};
+const middlewares = [createStateSyncMiddleware(config)];
+```

@@ -14,6 +14,7 @@ const defaultConfig = {
     broadcastChannelOption: undefined,
     prepareState: state => state,
     receiveState: (prevState, nextState) => nextState,
+    prepareAction: action => action,
 };
 
 const getIniteState = () => ({ type: GET_INIT_STATE });
@@ -98,6 +99,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
     const allowed = isActionAllowed(config);
     const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
     const prepareState = config.prepareState || defaultConfig.prepareState;
+    const prepareAction = config.prepareAction || defaultConfig.prepareAction;
     let messageListener = null;
 
     return ({ getState, dispatch }) => next => action => {
@@ -107,9 +109,11 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
         }
         // post messages
         if (action && !action.$uuid) {
-            const stampedAction = generateUuidForAction(action);
-            lastUuid = stampedAction.$uuid;
             try {
+                const preparedAction = prepareAction(action);
+                const stampedAction = generateUuidForAction(preparedAction);
+                lastUuid = stampedAction.$uuid;
+
                 if (action.type === SEND_INIT_STATE) {
                     if (getState()) {
                         stampedAction.payload = prepareState(getState());
@@ -121,7 +125,7 @@ export const createStateSyncMiddleware = (config = defaultConfig) => {
                     channel.postMessage(stampedAction);
                 }
             } catch (e) {
-                console.error("Your browser doesn't support cross tab communication");
+                console.error("An error occurred while posting an action");
             }
         }
         return next(
