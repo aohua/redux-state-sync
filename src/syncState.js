@@ -94,10 +94,11 @@ export function MessageListener({ channel, dispatch, allowed }) {
     this.messageChannel.onmessage = this.handleOnMessage;
 }
 
-export const createStateSyncMiddleware = (config = defaultConfig) => {
-    const allowed = isActionAllowed(config);
-    const channel = new BroadcastChannel(config.channel, config.broadcastChannelOption);
-    const prepareState = config.prepareState || defaultConfig.prepareState;
+export const createStateSyncMiddleware = partialConfig => {
+    const completeConfig = { ...defaultConfig, ...partialConfig };
+    const allowed = isActionAllowed(completeConfig);
+    const channel = new BroadcastChannel(completeConfig.channel, completeConfig.broadcastChannelOption);
+    const { prepareState } = completeConfig;
     let messageListener = null;
 
     return ({ getState, dispatch }) => next => action => {
