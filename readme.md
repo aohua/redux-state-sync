@@ -59,7 +59,32 @@ If you are using redux-persist, you may need to blacklist some of the actions th
 
 Create the state sync middleware with config:
 
+##### Using Redux Toolkit
 ```javascript
+// using Redux Toolkit
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
+
+const config = {
+    // TOGGLE_TODO will not be triggered in other tabs
+    blacklist: ['TOGGLE_TODO'],
+};
+
+const stateSyncMiddleware = createStateSyncMiddleware(config)
+const store = configureStore({
+    reducer,
+    middleware: (getDefaultMiddleware) => {
+        return getDefaultMiddleware().concat(stateSyncMiddleware);
+    },
+});
+
+// this is used to pass store.dispatch to the message listener
+initMessageListener(store);
+```
+
+##### Using low-level Redux Core API
+```javascript
+// using low-level Redux Core API
 import { createStore, applyMiddleware } from 'redux';
 import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
 
@@ -67,8 +92,10 @@ const config = {
     // TOGGLE_TODO will not be triggered in other tabs
     blacklist: ['TOGGLE_TODO'],
 };
+
 const middlewares = [createStateSyncMiddleware(config)];
 const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
+
 // this is used to pass store.dispatch to the message listener
 initMessageListener(store);
 ```
@@ -79,19 +106,11 @@ Init new tabs with existing state:
 
 1. Use initStateWithPrevTab to get existing state from other tabs
 
-```javascript
-import { createStore, applyMiddleware } from 'redux';
-import { createStateSyncMiddleware, initStateWithPrevTab } from 'redux-state-sync';
-
-const config = {
-    // TOGGLE_TODO will not be triggered in other tabs
-    blacklist: ['TOGGLE_TODO'],
-};
-const middlewares = [createStateSyncMiddleware(config)];
-const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
-// init state with other tabs
-initStateWithPrevTab(store);
-// initMessageListener(store);
+```diff
+- // this is used to pass store.dispatch to the message listener
+- initMessageListener(store);
++ // init state with other tabs
++ initStateWithPrevTab(store);
 ```
 
 ##### Note: if you are already using initStateWithPrevTab, you don't need to initMessageListener anymore.
